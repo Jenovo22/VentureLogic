@@ -6,10 +6,10 @@
 |---|---|
 | Mode | Standard (Strict TDD disabled) |
 | Delivery | Auto-chain using `feature-branch-chain` |
-| Completed tasks | 22 of 28 |
-| Current work unit | Slice 06 — strict verifier v2 and fixture matrix |
+| Completed tasks | 24 of 28 |
+| Current work unit | Slice 07 — thread-safe LoopGuard |
 | Tracker branch | `feat/complete-technical-assessment` |
-| Child branch | `feat/complete-technical-assessment-06-verifier-v2` |
+| Child branch | `feat/complete-technical-assessment-07-loop-guard` |
 | Baseline commit | `dfbcea27d7beb17e573a426c2939641a353aa946` |
 | Slice 1 commits | `784f01e0db477b9d6878484f7a45f46df7444995`, `cd5056dd234d84fe91b700cf643afdddf868d88f` |
 | Slice 2 implementation commit | `db84fa1a9a1de58d91a4961447c08d38fc0cb46f` |
@@ -23,6 +23,8 @@
 | Slice 5 receipt / Slice 6 base | `9fd1de05f2b8e17462caf0ab9609396c349d726f` |
 | Slice 6 planning correction commit | `7341d14bf6165953c3edbeec84956047ddc00a01` |
 | Slice 6 implementation commit | `7283bd017a7be6001bb92dc62f8d720ef14762a0` |
+| Slice 6 receipt / Slice 7 base | `b4c6951f6d9603e1e57303fe75d7871216f782c4` |
+| Slice 7 implementation commit | `12ab58b961855525e6504a1e3b772ae41ce979ef` |
 
 ## Completed Tasks
 
@@ -48,6 +50,8 @@
 - [x] 6.1 Add the strict JSON-only, non-rewriting verifier v2 contract with deterministic precedence and exact thresholds.
 - [x] 6.2 Add the fixture-grounded a-1 through a-5 verdict matrix with corrected a-3 rejection.
 - [x] 6.3 Record the verifier threshold/literalness decisions and bounded conceptual note in `NOTAS.md`.
+- [x] 7.1 Add RED coverage for limits, actionable excess errors, key isolation, reset ownership, snapshot ownership, and concurrent updates.
+- [x] 7.2 Implement the locked LoopGuard state transitions and record Slice 7 decisions and evidence in `NOTAS.md`.
 
 ## Work Unit Evidence
 
@@ -139,6 +143,20 @@
 | Review size | Slice 6 contains **164** authored additions plus deletions against base `9fd1de0`, including the four planning corrections and this receipt; below the 400-line policy. |
 | Rollback boundary | Revert the Slice 6 planning correction, `prompts/verificador_v2.md`, `prompts/casos_verificador.md`, the Slice 6 portions of `NOTAS.md`, task checkboxes, and this progress receipt. Preserve v1, protected fixtures/source data, and Slices 1–5. |
 
+### Slice 7 — thread-safe LoopGuard
+
+| Evidence | Result |
+|---|---|
+| RED | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_loop_guard.py -v --basetemp=.pytest-tmp-slice7-red` before production edits → exit 1; 7 failed in 0.05s at the supplied `NotImplementedError`. |
+| Focused GREEN | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_loop_guard.py -v --basetemp=.pytest-tmp-slice7-green` → exit 0; 7 passed in 0.03s. |
+| Concurrency repetition | The focused concurrent case, using 1000 calls for one key and 16 workers, ran 10 consecutive times through repository-local base directories → every run exited 0 with 1 passed, 6 deselected; nine runs completed in 0.02s and one in 0.03s. |
+| Full suite | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest --basetemp=.pytest-tmp-slice7-full` → exit 0; 56 passed in 0.12s. |
+| Runtime harness | N/A — LoopGuard is synchronous in-process shared state with no HTTP or external-work boundary. The ThreadPoolExecutor scenario exercises its real concurrency boundary without serializing tool execution. |
+| Behavioral invariants | Tests prove calls 1 through the limit succeed; attempted call 4 reports session, agent, count 4, and limit 3 while stored state remains 3; session-agent keys are isolated; reset and snapshots preserve ownership; and 1000 concurrent calls lose no increments. |
+| Integrity and dependencies | All 7 protected SHA-256 values and canonical `INTENTS` hash matched the baseline. Fixtures/source data, `requirements.txt`, and historical `verify-report.md` remained byte-for-byte unchanged; `git diff --check` exited 0. |
+| Review size | Slice 7 contains 179 authored additions plus deletions against Slice 6 receipt `b4c6951`, including this closure receipt; the implementation commit contains 144. This is below the 400-line policy. |
+| Rollback boundary | Revert `tools/loop_guard.py`, `tests/test_loop_guard.py`, the Slice 7 portions of `NOTAS.md`, task checkboxes, and this progress receipt. Preserve Slices 1–6 and all protected inputs. |
+
 ## Branch Boundary
 
 ```text
@@ -156,9 +174,11 @@ dfbcea2 tracker baseline: feat/complete-technical-assessment
                                                         └── 9fd1de0 Slice 05 receipt
                                                              └── 7341d14 Slice 06 planning correction
                                                                   └── 7283bd0 Slice 06 verifier implementation: feat/complete-technical-assessment-06-verifier-v2
+                                                                        └── b4c6951 Slice 06 receipt
+                                                                             └── 12ab58b Slice 07 LoopGuard implementation: feat/complete-technical-assessment-07-loop-guard
 ```
 
-Slice 6 starts at Slice 5 receipt `9fd1de0`, preserves the explicit planning correction `7341d14`, and ends at implementation commit `7283bd0` plus this closure receipt. This follows `feature-branch-chain`; no branch was pushed and no PR was created. The receipt commit containing this artifact is reported from `HEAD` after persistence because a commit cannot contain its own hash.
+Slice 7 starts at Slice 6 receipt `b4c6951` and ends at implementation commit `12ab58b` plus this closure receipt. This follows `feature-branch-chain`; no branch was pushed and no PR was created. The receipt commit containing this artifact is reported from `HEAD` after persistence because a commit cannot contain its own hash.
 
 ## Protected Baseline
 
@@ -182,7 +202,8 @@ Slice 6 starts at Slice 5 receipt `9fd1de0`, preserves the explicit planning cor
 - The full suite is green for the currently implemented capabilities; later planned capabilities remain pending.
 - Historical Slice 1 findings remain preserved verbatim in `verify-report.md`; that report was added to version control without rewriting it.
 - Slice 6 corrected the planned a-3 outcome before implementation: its `Configuración > Equipo` citation is not literal text from `Configuración, luego a Equipo`, so strict precedence requires `RECHAZADO`.
+- Slice 7 introduces no design deviation; one standard `threading.Lock` protects only shared counter transitions and snapshots.
 
 ## Remaining Scope
 
-Tasks 7.1 through 8.4 remain unchecked: thread-safe LoopGuard (7.1–7.2) and final delivery compliance/fresh-clone proof (8.1–8.4). The next autonomous work unit is Slice 07; no 7.x or 8.x task was implemented in this batch.
+Tasks 8.1 through 8.4 remain unchecked: final delivery compliance, truthful final notes, protected/dependency audit, screenshot, and fresh-clone proof. The next autonomous work unit is Slice 08; no 8.x task was implemented in this batch.
