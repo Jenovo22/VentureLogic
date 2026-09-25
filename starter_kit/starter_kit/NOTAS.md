@@ -2,9 +2,9 @@
 
 ## Resumen
 
-- Estado general: **INCOMPLETO**. Se completaron el clasificador, el reporte por intención y la consola del ejercicio 6.
-- Completado: `classify_intent()`, `count_messages_by_intent()`, la orquestación asíncrona y la interfaz segura de evidencia.
-- Pendiente: ejercicios 3 a 5, auditoría final, captura de pantalla y verificación desde un clon nuevo.
+- Estado general: **INCOMPLETO**. Se completaron el clasificador, el reporte por intención, la recuperación heredada y la consola del ejercicio 6.
+- Completado: `classify_intent()`, `count_messages_by_intent()`, la recuperación aislada con registro de correcciones, la orquestación asíncrona y la interfaz segura de evidencia.
+- Pendiente: ejercicios 4 y 5, auditoría final, captura de pantalla y verificación desde un clon nuevo.
 - Motivo: la entrega se construye en cortes autónomos para preservar evidencia y facilitar la revisión.
 
 ## Tiempo
@@ -15,7 +15,7 @@
 | Entrega real | **INCOMPLETO — todavía no ocurrió** |
 | Ejercicio 1 | **INCOMPLETO — horas reales pendientes** |
 | Ejercicio 2 | Implementación completada; **INCOMPLETO — horas reales pendientes** |
-| Ejercicio 3 | **INCOMPLETO — no iniciado** |
+| Ejercicio 3 | Implementación completada; **INCOMPLETO — horas reales pendientes** |
 | Ejercicio 4 | **INCOMPLETO — no iniciado** |
 | Ejercicio 5 | **INCOMPLETO — no iniciado** |
 | Ejercicio 6 | Núcleo e interfaz completados; **INCOMPLETO — horas reales y captura final pendientes** |
@@ -39,11 +39,15 @@ Las reglas ofrecen resultados deterministas, rápidos y auditables: ante el mism
 
 ## Ejercicio 3 — tabla de defectos
 
-**INCOMPLETO — el ejercicio 3 todavía no fue revisado ni corregido.**
-
 | # | Línea | Qué está mal | Síntoma en producción | Gravedad |
 |---|---|---|---|---|
-| — | — | Pendiente de análisis | Pendiente de evidencia | Pendiente |
+| 1 | `tools/legacy_answers_tool.py`, firma original | El argumento `cache={}` conserva resultados mutables por proceso y solo usa el workspace como clave. | Solicitudes posteriores reciben datos de otro umbral y observan mutaciones hechas por llamantes anteriores. | Crítica |
+| 2 | `tools/legacy_answers_tool.py`, construcción original del cliente | Cada ejecución construye `DatabaseClient()` en lugar de reutilizar el singleton suministrado. | Aumentan conexiones e inicializaciones y se rompe el contrato de una instancia por proceso. | Alta |
+| 3 | `tools/legacy_answers_tool.py`, bucle original de fuentes | Se realiza una lectura secuencial de fuente por cada respuesta antes de completar la solicitud. | La latencia crece linealmente y fuentes repetidas generan lecturas redundantes. | Alta |
+| 4 | `tools/legacy_answers_tool.py`, escritura original | Cada solicitud sobrescribe `/tmp/last_answers.json` como estado compartido. | Solicitudes concurrentes filtran o pisan respuestas entre sí y dependen de un efecto lateral global. | Crítica |
+| 5 | `tools/legacy_answers_tool.py`, resolución original de fuente | Una fuente inexistente, malformada o sin título aborta la solicitud completa sin evidencia durable. | Una respuesta defectuosa oculta respuestas válidas y el defecto no queda disponible para corrección auditada. | Alta |
+
+La implementación elimina el caché y la salida temporal, obtiene respuestas y fuentes una vez por solicitud, aplica el umbral inclusivo antes de leer fuentes y devuelve diccionarios nuevos. Las respuestas con fuente inválida se omiten; el registro pendiente conserva identificadores y motivo sin ampliar el esquema devuelto ni modificar datos protegidos.
 
 ## Ejercicio 4 — qué movería a código determinista
 
@@ -78,6 +82,8 @@ Cambiaría la comparación léxica por recuperación semántica con embeddings: 
 - Demostración HTTP real: Pro → `APROBADO` (1.0), contraseña → `DUDOSO` (0.566), Enterprise → `SIN_EVIDENCIA` (0.373, respuesta nula); cuatro fragmentos en cada caso.
 - Prueba hostil HTTP: pregunta con `<img onerror>` y `<script>` y workspace con `<script>` conservaron el texto exacto en JSON; la página usa `createElement`/`textContent`, no contiene `innerHTML` y codifica ambos parámetros.
 - Limitación: no había navegador ni automatización disponible; se usaron contratos estáticos, pruebas de página y tráfico HTTP real. La captura final sigue pendiente para el corte 8.
+- RED de recuperación heredada: 11 casos ejecutados contra el código original; 9 fallaron y 2 pasaron en 0.15 s. Los fallos expusieron contaminación por caché, pérdida de propiedad, lecturas de fuente y ausencia del ledger; los dos pases iniciales motivaron reforzar los escenarios de singleton y salida temporal antes de GREEN.
+- GREEN del corte 5: 11/11 pruebas de ledger y recuperación aprobaron en 0.06 s. El ledger predeterminado registró el defecto real `a-4`/`src-99-inexistente` como `missing_source`; dos respuestas válidas de `acme` se conservaron.
 
 ## Captura de abstención Enterprise
 
@@ -121,3 +127,13 @@ Cambiaría la comparación léxica por recuperación semántica con embeddings: 
 - El servidor local devolvió los tres resultados exigidos: Pro `APROBADO` con 1.0, contraseña `DUDOSO` con 0.566 y Enterprise `SIN_EVIDENCIA` con 0.373 y respuesta nula.
 - La prueba hostil preservó literalmente sintaxis `<img onerror>` y `<script>` en la API sin insertarla en la plantilla. No había motor de navegador para ejecutar el DOM; la evidencia combina el contrato automatizado y HTTP real.
 - No se tomó la captura Enterprise: permanece reservada para la verificación final del corte 8.
+
+### Corte 5 — recuperación heredada y ledger pendiente
+
+- El trabajo se dividió una sola vez: 5a contiene la infraestructura JSONL y sus pruebas; 5b integra la recuperación y sus pruebas para mantener unidades revisables.
+- `get_workspace_answers()` reutiliza el singleton, consulta respuestas una vez, retorna temprano sin leer fuentes cuando no hay elegibles y carga la tabla de fuentes una sola vez para indexarla por identificador.
+- Cada resultado y diccionario enriquecido es nuevo. El umbral es inclusivo y `confianza` conserva el contrato existente (`alta` solo cuando la similitud es mayor que `0.8`).
+- Una fuente ausente, malformada o sin título genera log y registro durable con motivo distinto; la respuesta afectada se omite y las respuestas válidas conservan su esquema y disponibilidad.
+- El ledger UTF-8 JSONL usa deduplicación estable, bloqueo de hilo, `flush`/`fsync`, estado `pending` y tiempo UTC. Un archivo ausente o vacío equivale a cero pendientes; sintaxis malformada falla explícitamente.
+- El registro predeterminado contiene un defecto real de la fixture: respuesta `a-4`, fuente `src-99-inexistente`, motivo `missing_source`. Permanece pendiente y **no autoriza** corregir fuentes, fixtures ni datos.
+- No se accedió a la ruta histórica `/tmp/last_answers.json`: el RED interceptó su intento mediante mock y GREEN elimina toda salida temporal compartida. Los únicos archivos temporales de pruebas fueron proporcionados por `tmp_path`.
