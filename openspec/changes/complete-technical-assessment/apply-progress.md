@@ -6,15 +6,17 @@
 |---|---|
 | Mode | Standard (Strict TDD disabled) |
 | Delivery | Auto-chain using `feature-branch-chain` |
-| Completed tasks | 12 of 28 |
-| Current work unit | Slice 03 — async `consultar()` evidence core |
+| Completed tasks | 15 of 28 |
+| Current work unit | Slice 04 — safe human-readable console |
 | Tracker branch | `feat/complete-technical-assessment` |
-| Child branch | `feat/complete-technical-assessment-03-consultar-core` |
+| Child branch | `feat/complete-technical-assessment-04-safe-console` |
 | Baseline commit | `dfbcea27d7beb17e573a426c2939641a353aa946` |
 | Slice 1 commits | `784f01e0db477b9d6878484f7a45f46df7444995`, `cd5056dd234d84fe91b700cf643afdddf868d88f` |
 | Slice 2 implementation commit | `db84fa1a9a1de58d91a4961447c08d38fc0cb46f` |
 | Slice 2 receipt commit | `9d1035160179192a21ea92449f1aa81e95eaf188` |
 | Slice 3 implementation commit | `c1f9e1d` |
+| Slice 3 receipt commit | `86f5707` |
+| Slice 4 implementation commit | `2dd0bde` |
 
 ## Completed Tasks
 
@@ -30,6 +32,9 @@
 - [x] 3.1 Add RED coverage for the exact shape, all fragments, true maximum, empty/no-overlap behavior, exact boundaries, numeric reasons, and literal response identity.
 - [x] 3.2 Implement the async `consultar()` core without changing the HTTP handler or protected retriever.
 - [x] 3.3 Record Slice 3 decisions and verification evidence in `NOTAS.md`, run checks, and measure the slice.
+- [x] 4.1 Add RED safe-render, URL-encoding, complete-page, verdict-style, selected-fragment, and abstention contract tests.
+- [x] 4.2 Replace raw JSON with dependency-free DOM rendering through `createElement` and `textContent` sinks only.
+- [x] 4.3 Demonstrate all three mandated verdicts through the real local API and record Slice 4 evidence without fabricating the final screenshot.
 
 ## Work Unit Evidence
 
@@ -75,6 +80,23 @@
 | Review size | 326 additions plus deletions versus immediate predecessor receipt `9d10351`, including the preserved 109-line Slice 2 verify-report extension; below the 400-line policy. The functional implementation commit contains 169 insertions and 6 deletions. |
 | Rollback boundary | Revert Slice 3 changes to the `consultar()` section of `app.py`, Slice 3 core cases in `tests/test_app.py`, the Slice 3 portions of `NOTAS.md`, and corresponding task/progress receipt updates; retain the existing Handler/page and Slices 1–2. |
 
+### Slice 4 — safe human-readable console
+
+| Evidence | Result |
+|---|---|
+| RED | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_app.py -v -k "safe or render or markup"` before page implementation → exit 1; 3 failed, 9 deselected in 0.07s. |
+| Focused safe-render GREEN | Same focused command after implementation → exit 0; 3 passed, 9 deselected in 0.05s. |
+| Complete app GREEN | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_app.py -v` → exit 0; 12 passed in 0.05s. |
+| Classifier regression | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_classify_intent.py -v` → exit 0; 18 passed in 0.02s. |
+| Report regression | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_intent_report.py -v` → exit 0; 8 passed in 0.03s. |
+| Full suite | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest` → exit 0; 38 passed in 0.08s. |
+| Runtime harness | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python app.py` plus real HTTP GETs to `/` and `/api/consulta` → page HTTP 200 (4522 bytes); Pro question `APROBADO`/1.0/4 fragments, password question `DUDOSO`/0.566/4 fragments, Enterprise question `SIN_EVIDENCIA`/0.373/4 fragments/`respuesta: null`. |
+| Safe rendering | Focused tests require DOM creation and text sinks for question, workspace, intent, specialist, every fragment field, verdict, reason, and response; prohibit `innerHTML` and response-data template interpolation; require URL encoding for `q` and `ws`. HTTP probes round-tripped `<img onerror>`/`<script>` question text and a `<script>` workspace exactly as JSON while neither string entered the served template. |
+| Browser limitation | Chromium, Chrome, Firefox, and Playwright were unavailable. Node 18 had no browser DOM. The strongest available evidence was static DOM-sink contract testing plus real page/API HTTP traffic; no screenshot was captured because task 8.4 remains pending. |
+| Integrity and side effects | All 7 protected hashes match `evidence/protected_baseline.json`; protected/dependency range diff is empty; Slice 4 diff contains zero `/tmp` references and no `/tmp` path was accessed. Historical `verify-report.md` remains byte-for-byte untouched. |
+| Review size | 143 authored additions plus deletions in the functional commit (`app.py`, `tests/test_app.py`, `NOTAS.md`). The complete child range through the pending receipt is 188 additions plus deletions across 5 files, below both the 180–300 Slice 4 forecast and 400-line policy. |
+| Rollback boundary | Revert Slice 4 changes to the page-only `PAGINA` section of `app.py`, the three safe-render tests in `tests/test_app.py`, Slice 4 portions of `NOTAS.md`, and corresponding task/progress receipt updates. Retain `consultar()` and all Slices 1–3 behavior. |
+
 ## Branch Boundary
 
 ```text
@@ -83,10 +105,12 @@ dfbcea2 tracker baseline: feat/complete-technical-assessment
         └── cd5056d Slice 01 receipt: feat/complete-technical-assessment-01-classifier
              └── db84fa1 Slice 02 implementation
                   └── 9d10351 Slice 02 receipt: feat/complete-technical-assessment-02-intent-report
-                       └── c1f9e1d Slice 03 implementation: feat/complete-technical-assessment-03-consultar-core
+                        └── c1f9e1d Slice 03 implementation
+                             └── 86f5707 Slice 03 receipt: feat/complete-technical-assessment-03-consultar-core
+                                  └── 2dd0bde Slice 04 implementation: feat/complete-technical-assessment-04-safe-console
 ```
 
-The intended Slice 3 child review base is `feat/complete-technical-assessment-02-intent-report` at receipt `9d10351`. No branch was pushed and no PR was created.
+The intended Slice 4 child review base is `feat/complete-technical-assessment-03-consultar-core` at receipt `86f5707`. No branch was pushed and no PR was created. The progress receipt commit containing this artifact is reported from `HEAD` after persistence because a commit cannot contain its own hash.
 
 ## Protected Baseline
 
@@ -104,9 +128,10 @@ The intended Slice 3 child review base is `feat/complete-technical-assessment-02
 
 - Design deviation: none.
 - CodeGraph initialization was attempted once and failed because the upstream `codegraph` executable is unavailable; bounded file inspection was used as the documented fallback.
-- The full suite is green for the currently implemented capabilities; later planned suites and console UI work remain pending.
+- Browser automation was unavailable; static DOM-sink checks and real HTTP requests provide the available injection evidence, while final browser screenshot capture remains task 8.4.
+- The full suite is green for the currently implemented capabilities; later planned capabilities remain pending.
 - Historical Slice 1 findings remain preserved verbatim in `verify-report.md`; that report was added to version control without rewriting it.
 
 ## Remaining Scope
 
-Tasks 4.1 through 8.4 remain unchecked. The next autonomous work unit is Slice 04, the safe console UI; it was not implemented in this batch.
+Tasks 5.1 through 8.4 remain unchecked. The next autonomous work unit is Slice 05, isolated legacy retrieval and its correction ledger; it was not implemented in this batch.
