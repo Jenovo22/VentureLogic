@@ -11,6 +11,8 @@ directamente. Si tu lógica quedó atrapada dentro del handler HTTP, no vas a
 poder escribirlos, y eso ya es una señal sobre el diseño.
 """
 
+import re
+
 import pytest
 
 import app
@@ -144,3 +146,39 @@ async def test_aplica_los_limites_exactos(monkeypatch, similitud, veredicto, res
     assert "0.55" in resultado["motivo"]
     assert "0.75" in resultado["motivo"]
     assert resultado["respuesta"] == (texto if responde else None)
+
+
+def test_safe_render_pagina_usa_solo_sumideros_de_texto():
+    pagina = app.PAGINA
+    script = re.search(r"<script>(.*?)</script>", pagina, re.DOTALL).group(1)
+
+    assert "document.createElement" in script
+    assert ".textContent" in script
+    assert "innerHTML" not in pagina
+    assert not re.search(r"`[^`]*\$\{data(?:\.|\[)", script)
+
+    for campo in (
+        "pregunta", "workspace", "intencion", "especialista", "fragmentos",
+        "source_id", "titulo", "chunk", "texto", "similitud", "veredicto",
+        "motivo", "respuesta",
+    ):
+        assert campo in script
+
+
+def test_safe_render_pagina_codifica_pregunta_y_workspace():
+    assert "encodeURIComponent(q)" in app.PAGINA
+    assert "encodeURIComponent(ws)" in app.PAGINA
+
+
+def test_safe_render_pagina_expone_pipeline_fragmentos_y_abstencion():
+    pagina = app.PAGINA
+
+    for etiqueta in ("Intención", "Especialista", "Fragmentos recuperados", "Motivo", "Respuesta"):
+        assert etiqueta in pagina
+    for veredicto in ("APROBADO", "DUDOSO", "SIN_EVIDENCIA"):
+        assert veredicto in pagina
+        assert f"verdict-{veredicto}" in pagina
+
+    assert "Fragmento seleccionado" in pagina
+    assert "No hay evidencia suficiente para responder." in pagina
+    assert "setAttribute('role', 'status')" in pagina

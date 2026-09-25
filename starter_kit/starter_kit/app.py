@@ -148,7 +148,18 @@ PAGINA = """<!doctype html>
          padding: 0 20px; color: #1a2330; }
   input[type=text] { width: 100%; padding: 10px; font-size: 16px; }
   button { padding: 10px 18px; font-size: 15px; cursor: pointer; }
-  pre { background: #f2f4f7; padding: 14px; overflow-x: auto; white-space: pre-wrap; }
+  #out { display: grid; gap: 16px; }
+  .card { border: 1px solid #ccd5df; border-radius: 8px; padding: 14px; }
+  .summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .label { color: #51606f; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+  .verdict { border: 3px solid; font-size: 22px; font-weight: 800; }
+  .verdict-APROBADO { background: #e8f7ed; border-color: #207a3d; color: #135328; }
+  .verdict-DUDOSO { background: #fff5d6; border-color: #9a6800; color: #624300; }
+  .verdict-SIN_EVIDENCIA { background: #fde8e7; border-color: #a52820; color: #721c18; }
+  .fragment { background: #f5f7fa; }
+  .selected { border: 3px solid #1769aa; }
+  .meta { color: #51606f; font-size: 14px; }
+  .abstention { color: #721c18; font-size: 18px; font-weight: 800; }
 </style>
 </head><body>
   <h1>Consola del Asistente</h1>
@@ -165,10 +176,71 @@ PAGINA = """<!doctype html>
     </p>
   </form>
 
-  <!-- TODO: reemplaza este volcado por algo legible -->
-  <pre id="out">Escribe una pregunta para empezar.</pre>
+  <main id="out" aria-live="polite">Escribe una pregunta para empezar.</main>
 
 <script>
+const node = (tag, text, className) => {
+  const element = document.createElement(tag);
+  if (text !== undefined && text !== null) element.textContent = String(text);
+  if (className) element.className = className;
+  return element;
+};
+
+const field = (label, value) => {
+  const container = node('div');
+  container.append(node('div', label, 'label'), node('div', value ?? '—'));
+  return container;
+};
+
+const renderResult = (out, data) => {
+  out.replaceChildren();
+
+  const summary = node('section', undefined, 'card summary');
+  summary.append(
+    field('Pregunta', data.pregunta),
+    field('Workspace', data.workspace),
+    field('Intención', data.intencion),
+    field('Especialista', data.especialista)
+  );
+
+  const verdictClass = {
+    APROBADO: 'verdict-APROBADO',
+    DUDOSO: 'verdict-DUDOSO',
+    SIN_EVIDENCIA: 'verdict-SIN_EVIDENCIA'
+  }[data.veredicto] || '';
+  const verdict = node('section', undefined, `card verdict ${verdictClass}`);
+  verdict.setAttribute('role', 'status');
+  verdict.append(node('div', 'Veredicto', 'label'), node('div', data.veredicto));
+
+  const evidence = node('section', undefined, 'card');
+  evidence.append(node('h2', 'Fragmentos recuperados'));
+  const selectedIndex = data.fragmentos.reduce(
+    (best, fragment, index, all) =>
+      best < 0 || fragment.similitud > all[best].similitud ? index : best,
+    -1
+  );
+  data.fragmentos.forEach((fragment, index) => {
+    const selected = index === selectedIndex;
+    const item = node('article', undefined, `card fragment${selected ? ' selected' : ''}`);
+    if (selected) item.append(node('strong', 'Fragmento seleccionado'));
+    item.append(
+      node('div', `Fuente: ${fragment.source_id} · Título: ${fragment.titulo} · Chunk: ${fragment.chunk}`, 'meta'),
+      node('div', `Similitud: ${fragment.similitud}`, 'meta'),
+      node('p', fragment.texto)
+    );
+    evidence.append(item);
+  });
+  if (!data.fragmentos.length) evidence.append(node('p', 'No se recuperaron fragmentos.'));
+
+  const decision = node('section', undefined, 'card');
+  decision.append(node('h2', 'Motivo'), node('p', data.motivo), node('h2', 'Respuesta'));
+  decision.append(data.respuesta === null
+    ? node('p', 'No hay evidencia suficiente para responder.', 'abstention')
+    : node('p', data.respuesta));
+
+  out.append(summary, verdict, evidence, decision);
+};
+
 document.getElementById('f').onsubmit = async (e) => {
   e.preventDefault();
   const q = document.getElementById('q').value;
@@ -176,9 +248,9 @@ document.getElementById('f').onsubmit = async (e) => {
   const out = document.getElementById('out');
   out.textContent = 'Consultando…';
   try {
-    const r = await fetch(`/api/consulta?q=${encodeURIComponent(q)}&ws=${ws}`);
+    const r = await fetch(`/api/consulta?q=${encodeURIComponent(q)}&ws=${encodeURIComponent(ws)}`);
     const data = await r.json();
-    out.textContent = JSON.stringify(data, null, 2);
+    renderResult(out, data);
   } catch (err) {
     out.textContent = 'Error: ' + err;
   }
