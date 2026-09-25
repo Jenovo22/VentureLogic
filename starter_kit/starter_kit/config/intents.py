@@ -12,6 +12,8 @@ EJERCICIO 1: implementa `classify_intent`. No modifiques `INTENTS`.
 
 from __future__ import annotations
 
+import unicodedata
+
 # ---------------------------------------------------------------------------
 # Catálogo. NO MODIFICAR.
 # Los patrones ya están normalizados: minúsculas, sin acentos, palabras
@@ -64,7 +66,7 @@ MIN_LENGTH = 3
 UNKNOWN = "desconocido"
 
 
-def classify_intent(message: str) -> str:
+def classify_intent(message: str | None) -> str:
     """Devuelve la intención de un mensaje del usuario.
 
     Reglas que debe cumplir tu implementación:
@@ -90,7 +92,38 @@ def classify_intent(message: str) -> str:
     Returns:
         Una de las claves de `INTENTS`, o `UNKNOWN`.
     """
-    raise NotImplementedError("EJERCICIO 1")
+    if not message:
+        return UNKNOWN
+
+    eligible_text = " ".join(
+        line for line in message.splitlines() if not line.lstrip().startswith(">")
+    )
+    decomposed = unicodedata.normalize("NFKD", eligible_text)
+    without_marks = "".join(
+        character
+        for character in decomposed
+        if not unicodedata.combining(character)
+    ).lower()
+    normalized = " ".join(
+        "".join(
+            character if character.isalnum() else " " for character in without_marks
+        ).split()
+    )
+
+    if len(normalized) < MIN_LENGTH:
+        return UNKNOWN
+
+    searchable = f" {normalized} "
+    selected_intent = UNKNOWN
+    selected_length = 0
+
+    for intent, entry in INTENTS.items():
+        for pattern in entry["patterns"]:
+            if f" {pattern} " in searchable and len(pattern) > selected_length:
+                selected_intent = intent
+                selected_length = len(pattern)
+
+    return selected_intent
 
 
 def specialist_for(intent: str) -> str | None:

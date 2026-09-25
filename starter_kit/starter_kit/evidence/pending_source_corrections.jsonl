@@ -1,0 +1,1 @@
+{"answer_id": "a-4", "detail": "Referenced source was not found.", "first_observed_at": "2026-09-25T07:12:38.903023Z", "reason": "missing_source", "schema_version": 1, "source_id": "src-99-inexistente", "status": "pending", "workspace_id": "acme"}
