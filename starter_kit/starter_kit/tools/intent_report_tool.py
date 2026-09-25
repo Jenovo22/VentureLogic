@@ -13,6 +13,9 @@ from __future__ import annotations
 
 import logging
 
+from config.intents import UNKNOWN, classify_intent
+from shared.clients import get_db_client, get_storage_client
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,4 +49,49 @@ async def count_messages_by_intent(workspace_id: str) -> dict[str, int]:
     Returns:
         Diccionario `{intencion: conteo}`.
     """
-    raise NotImplementedError("EJERCICIO 2")
+    db = get_db_client()
+    storage = get_storage_client()
+
+    try:
+        intent_records = await db.table("intents").get()
+    except Exception:
+        logger.error(
+            "intent report failed: operation=intents.get workspace=%s",
+            workspace_id,
+        )
+        raise
+
+    active_intents = {
+        record.id for record in intent_records if record.to_dict().get("active") is True
+    }
+    counts = {intent: 0 for intent in active_intents}
+    counts[UNKNOWN] = 0
+
+    try:
+        messages = await storage.list_messages(workspace_id)
+    except KeyError:
+        # Missing and empty workspaces have different meanings, so the caller
+        # receives the storage client's KeyError instead of a zero report.
+        logger.error(
+            "intent report failed: operation=list_messages workspace=%s missing=true",
+            workspace_id,
+        )
+        raise
+    except Exception:
+        logger.error(
+            "intent report failed: operation=list_messages workspace=%s",
+            workspace_id,
+        )
+        raise
+
+    for message in messages:
+        intent = classify_intent(message)
+        bucket = intent if intent in active_intents else UNKNOWN
+        counts[bucket] += 1
+
+    logger.info(
+        "intent report completado: workspace=%s total=%d",
+        workspace_id,
+        len(messages),
+    )
+    return counts
