@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "hash_algorithm": "sha256",
+  "files": {
+    "fixtures/db.json": "bd8fde9415075adbb7c2e60f745a421af4be45e395c6bbff51c7d30936a6b9b0",
+    "fixtures/storage.json": "b8fc9e1ae4272d7d070553bd4fe7b88072bec254caa7baf7e1c881fef5739368",
+    "pytest.ini": "dfc83cb92c540dd2b4b5c16443ee286b57652736ac1d3cf7b3bfe9f94479ae5e",
+    "requirements.txt": "894ad39947ed91445598eaf6a7f4d10dcd5c5f9b074cb97889f2cbea455c348e",
+    "shared/clients.py": "d2a731a32ecb861e1fefd68a80976c428f59368e1b2f7856fb9a384b4ff32651",
+    "shared/retriever.py": "acf5331af154f4c4c69fe28a73dd545e0c63c406ca66c94608f1a7a6f7817978",
+    "tests/test_classify_intent.py": "8f140f223373a2231001958aa014eccab1ee116b25be77da54d5e206ce424146"
+  },
+  "intents": {
+    "canonicalization": "AST literal evaluated, then JSON encoded with UTF-8, sorted keys, no ASCII escaping, and compact separators",
+    "sha256": "6a0f75403c5f47e871c27c63da88d52202b8e472cfc70592826ede16f90d79c0"
+  }
+}
