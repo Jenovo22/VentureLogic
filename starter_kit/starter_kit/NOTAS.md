@@ -85,6 +85,8 @@ Cambiaría la comparación léxica por recuperación semántica con embeddings: 
 - RED de recuperación heredada: 11 casos ejecutados contra el código original; 9 fallaron y 2 pasaron en 0.15 s. Los fallos expusieron contaminación por caché, pérdida de propiedad, lecturas de fuente y ausencia del ledger; los dos pases iniciales motivaron reforzar los escenarios de singleton y salida temporal antes de GREEN.
 - Efecto lateral durante ese RED: la implementación heredada creó `/tmp/last_answers.json`. Su contenido no se leyó. Con autorización específica, el proceso padre eliminó ese archivo y verificó su ausencia; esta recuperación no autoriza acceso a otras rutas externas.
 - GREEN del corte 5: 11/11 pruebas de ledger y recuperación aprobaron en 0.06 s. El ledger predeterminado registró el defecto real `a-4`/`src-99-inexistente` como `missing_source`; dos respuestas válidas de `acme` se conservaron.
+- Verificador v2: los 2 ejemplos JSON se parsearon con claves cerradas; la matriz derivada directamente de la fixture fue `a-1` APROBADO, `a-2`/`a-3`/`a-4` RECHAZADO y `a-5` DUDOSO.
+- Regresión del corte 6: suite completa 49/49 en 0.10 s; 7/7 hashes protegidos, `INTENTS`, dependencias, v1 y el informe histórico permanecieron sin cambios.
 
 ## Captura de abstención Enterprise
 

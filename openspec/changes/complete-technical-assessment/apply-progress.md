@@ -6,10 +6,10 @@
 |---|---|
 | Mode | Standard (Strict TDD disabled) |
 | Delivery | Auto-chain using `feature-branch-chain` |
-| Completed tasks | 19 of 28 |
-| Current work unit | Slice 05 — isolated legacy retrieval and pending-correction ledger |
+| Completed tasks | 22 of 28 |
+| Current work unit | Slice 06 — strict verifier v2 and fixture matrix |
 | Tracker branch | `feat/complete-technical-assessment` |
-| Child branch | `feat/complete-technical-assessment-05b-legacy-integration` |
+| Child branch | `feat/complete-technical-assessment-06-verifier-v2` |
 | Baseline commit | `dfbcea27d7beb17e573a426c2939641a353aa946` |
 | Slice 1 commits | `784f01e0db477b9d6878484f7a45f46df7444995`, `cd5056dd234d84fe91b700cf643afdddf868d88f` |
 | Slice 2 implementation commit | `db84fa1a9a1de58d91a4961447c08d38fc0cb46f` |
@@ -20,6 +20,9 @@
 | Slice 4 receipt commit | `28b7102054bb09f578d8eab74df4301523b34b1a` |
 | Slice 5a implementation commit | `89fedf47f208bcd71b7873cc8d18e6dcec60aacb` |
 | Slice 5b implementation commit | `65b1455f3f53eb636aa37547e9c1680ef85a51b1` |
+| Slice 5 receipt / Slice 6 base | `9fd1de05f2b8e17462caf0ab9609396c349d726f` |
+| Slice 6 planning correction commit | `7341d14bf6165953c3edbeec84956047ddc00a01` |
+| Slice 6 implementation commit | `7283bd017a7be6001bb92dc62f8d720ef14762a0` |
 
 ## Completed Tasks
 
@@ -42,6 +45,9 @@
 - [x] 5.2 Add the durable, thread-safe, deduplicated pending-correction ledger.
 - [x] 5.3 Repair legacy retrieval with singleton reuse, inclusive filtering, one source-table read, fresh results, and omission recording.
 - [x] 5.4 Record the legacy defects, genuine pending record, split topology, verification, and approved review-size exception.
+- [x] 6.1 Add the strict JSON-only, non-rewriting verifier v2 contract with deterministic precedence and exact thresholds.
+- [x] 6.2 Add the fixture-grounded a-1 through a-5 verdict matrix with corrected a-3 rejection.
+- [x] 6.3 Record the verifier threshold/literalness decisions and bounded conceptual note in `NOTAS.md`.
 
 ## Work Unit Evidence
 
@@ -120,6 +126,19 @@
 | Review size | Slice 5a is 175 authored changed lines. Slice 5b is 416 total changed lines including one generated ledger line, therefore 415 authored changed lines. The maintainer explicitly approved `size:exception` for Slice 5b; no code, tests, comments, or documentation were compressed to meet the budget. |
 | Rollback boundary | Slice 5a can be reverted through `tools/correction_ledger.py` and `tests/test_correction_ledger.py`. Slice 5b can be reverted through `tools/legacy_answers_tool.py`, `tests/test_legacy_answers.py`, `evidence/pending_source_corrections.jsonl`, the Slice 5 sections of `NOTAS.md`, and this tasks/progress receipt. Retain Slices 1–4 and do not alter protected fixtures/source data. |
 
+### Slice 6 — strict verifier v2 and fixture matrix
+
+| Evidence | Result |
+|---|---|
+| Focused contract check | Python stdlib `json` parsed both prompt examples; exact closed input, authoritative-evidence, output, and check key sets matched; the output contains no rewritten-answer field. |
+| Fixture reconciliation | Direct evaluation of `fixtures/db.json` source ownership, literal substring, non-null chunk metadata, and raw similarity produced `a-1` APROBADO; `a-2`, `a-3`, `a-4` RECHAZADO; `a-5` DUDOSO. Check tuples `(literal, source, traceability, similarity)` were respectively `(T,T,T,T)`, `(F,T,T,F)`, `(F,T,T,T)`, `(F,F,F,T)`, and `(T,T,F,T)`. |
+| Full suite | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest` → exit 0; 49 passed in 0.10s. |
+| Runtime harness | N/A — Slice 6 defines a Markdown prompt/document contract and has no runtime service boundary. |
+| Notes bound | Exercise 4 conceptual note is 113 words; limit 120. |
+| Integrity and dependencies | All 7 protected SHA-256 values and canonical `INTENTS` hash matched the baseline; `requirements.txt` was unchanged. `verificador_v1.md` remained `618e96f7b6fb015c06421102ae6dcd8dd958669114e899aa23e13baf5c0f0fbc`; historical `verify-report.md` remained `359f29fdad767ee53b0d330f9a8244ace86b4e1d86bdbbcf514911966186baf0`. `git diff --check` exited 0. |
+| Review size | Slice 6 contains **164** authored additions plus deletions against base `9fd1de0`, including the four planning corrections and this receipt; below the 400-line policy. |
+| Rollback boundary | Revert the Slice 6 planning correction, `prompts/verificador_v2.md`, `prompts/casos_verificador.md`, the Slice 6 portions of `NOTAS.md`, task checkboxes, and this progress receipt. Preserve v1, protected fixtures/source data, and Slices 1–5. |
+
 ## Branch Boundary
 
 ```text
@@ -133,10 +152,13 @@ dfbcea2 tracker baseline: feat/complete-technical-assessment
                                    └── 2dd0bde Slice 04 implementation: feat/complete-technical-assessment-04-safe-console
                                         └── 28b7102 Slice 04 receipt
                                              └── 89fedf4 Slice 05a ledger infrastructure: feat/complete-technical-assessment-05a-correction-ledger
-                                                  └── 65b1455 Slice 05b legacy integration: feat/complete-technical-assessment-05b-legacy-integration
+                                                   └── 65b1455 Slice 05b legacy integration: feat/complete-technical-assessment-05b-legacy-integration
+                                                        └── 9fd1de0 Slice 05 receipt
+                                                             └── 7341d14 Slice 06 planning correction
+                                                                  └── 7283bd0 Slice 06 verifier implementation: feat/complete-technical-assessment-06-verifier-v2
 ```
 
-The Slice 5a child starts at Slice 4 receipt `28b7102`; Slice 5b starts at Slice 5a commit `89fedf4` and ends at implementation commit `65b1455` plus this closure receipt. This follows `feature-branch-chain`; no branch was pushed and no PR was created. The receipt commit containing this artifact is reported from `HEAD` after persistence because a commit cannot contain its own hash.
+Slice 6 starts at Slice 5 receipt `9fd1de0`, preserves the explicit planning correction `7341d14`, and ends at implementation commit `7283bd0` plus this closure receipt. This follows `feature-branch-chain`; no branch was pushed and no PR was created. The receipt commit containing this artifact is reported from `HEAD` after persistence because a commit cannot contain its own hash.
 
 ## Protected Baseline
 
@@ -159,7 +181,8 @@ The Slice 5a child starts at Slice 4 receipt `28b7102`; Slice 5b starts at Slice
 - Slice 5b exceeds the review budget by 15 authored lines after one honest split; the maintainer approved `size:exception` for its 415 authored lines.
 - The full suite is green for the currently implemented capabilities; later planned capabilities remain pending.
 - Historical Slice 1 findings remain preserved verbatim in `verify-report.md`; that report was added to version control without rewriting it.
+- Slice 6 corrected the planned a-3 outcome before implementation: its `Configuración > Equipo` citation is not literal text from `Configuración, luego a Equipo`, so strict precedence requires `RECHAZADO`.
 
 ## Remaining Scope
 
-Tasks 6.1 through 8.4 remain unchecked: verifier v2 and fixture matrix (6.1–6.3), thread-safe LoopGuard (7.1–7.2), and final delivery compliance/fresh-clone proof (8.1–8.4). The next autonomous work unit is Slice 06; no 6.x–8.x task was implemented in this batch.
+Tasks 7.1 through 8.4 remain unchecked: thread-safe LoopGuard (7.1–7.2) and final delivery compliance/fresh-clone proof (8.1–8.4). The next autonomous work unit is Slice 07; no 7.x or 8.x task was implemented in this batch.
