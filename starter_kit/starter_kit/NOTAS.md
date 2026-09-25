@@ -2,9 +2,9 @@
 
 ## Resumen
 
-- Estado general: **INCOMPLETO**. Se completaron el clasificador, el reporte por intención y el núcleo `consultar()`.
-- Completado: `classify_intent()`, `count_messages_by_intent()` y la orquestación asíncrona de evidencia.
-- Pendiente: ejercicios 3 a 5, interfaz del ejercicio 6, auditoría final, evidencia de consola y verificación desde un clon nuevo.
+- Estado general: **INCOMPLETO**. Se completaron el clasificador, el reporte por intención y la consola del ejercicio 6.
+- Completado: `classify_intent()`, `count_messages_by_intent()`, la orquestación asíncrona y la interfaz segura de evidencia.
+- Pendiente: ejercicios 3 a 5, auditoría final, captura de pantalla y verificación desde un clon nuevo.
 - Motivo: la entrega se construye en cortes autónomos para preservar evidencia y facilitar la revisión.
 
 ## Tiempo
@@ -18,7 +18,7 @@
 | Ejercicio 3 | **INCOMPLETO — no iniciado** |
 | Ejercicio 4 | **INCOMPLETO — no iniciado** |
 | Ejercicio 5 | **INCOMPLETO — no iniciado** |
-| Ejercicio 6 | Núcleo `consultar()` completado; **INCOMPLETO — interfaz y horas reales pendientes** |
+| Ejercicio 6 | Núcleo e interfaz completados; **INCOMPLETO — horas reales y captura final pendientes** |
 
 ## Decisiones
 
@@ -51,7 +51,7 @@ Las reglas ofrecen resultados deterministas, rápidos y auditables: ante el mism
 
 ## Ejercicio 6 — cómo mejoraría el recuperador
 
-**INCOMPLETO — nota pendiente hasta implementar y evaluar la consola (máximo 120 palabras).**
+Cambiaría la comparación léxica por recuperación semántica con embeddings: representaría preguntas y fragmentos como vectores y buscaría por cercanía, de modo que “restablecer contraseña” y “recuperar acceso” puedan coincidir aunque no compartan palabras. Mantendría un índice léxico como señal complementaria para términos exactos, nombres de planes y cifras. El costo es mayor complejidad operativa: generar y versionar embeddings, reconstruir el índice cuando cambia el contenido, medir latencia y pagar cómputo o un servicio externo. También exigiría un conjunto de evaluación por cliente para ajustar umbrales y comprobar que la mejora semántica no recupera fragmentos plausibles pero incorrectos.
 
 ## Ejercicio 5 — dónde enchufo la guardia
 
@@ -73,6 +73,11 @@ Las reglas ofrecen resultados deterministas, rápidos y auditables: ante el mism
 - RED de `consultar()`: 9 fallos en 0.11 s antes de implementar el núcleo.
 - GREEN de `consultar()`: 9 pruebas aprobadas en 0.04 s; regresiones de clasificador y reporte aprobadas, y suite completa 35/35 en 0.08 s.
 - Smoke HTTP del corte: `/api/consulta` devolvió 200, las 8 claves exactas, 4 fragmentos, `APROBADO` y la respuesta literal del fragmento con mayor similitud.
+- RED de interfaz segura: 3 fallos esperados antes de reemplazar el volcado JSON.
+- GREEN de interfaz: 12/12 pruebas de `test_app.py`; regresiones de clasificador 18/18 y reporte 8/8; suite completa 38/38.
+- Demostración HTTP real: Pro → `APROBADO` (1.0), contraseña → `DUDOSO` (0.566), Enterprise → `SIN_EVIDENCIA` (0.373, respuesta nula); cuatro fragmentos en cada caso.
+- Prueba hostil HTTP: pregunta con `<img onerror>` y `<script>` y workspace con `<script>` conservaron el texto exacto en JSON; la página usa `createElement`/`textContent`, no contiene `innerHTML` y codifica ambos parámetros.
+- Limitación: no había navegador ni automatización disponible; se usaron contratos estáticos, pruebas de página y tráfico HTTP real. La captura final sigue pendiente para el corte 8.
 
 ## Captura de abstención Enterprise
 
@@ -108,3 +113,11 @@ Las reglas ofrecen resultados deterministas, rápidos y auditables: ante el mism
 - Los límites se comparan sin redondear: menos de `0.55` abstiene, desde `0.55` hasta menos de `0.75` es `DUDOSO`, y desde `0.75` es `APROBADO`.
 - Cada motivo expone el valor observado o la ausencia de fragmentos y los umbrales aplicables; la respuesta aprobada o dudosa conserva exactamente el texto superior.
 - La interfaz existente no se modificó: el renderizado seguro y la demostración visual pertenecen al corte 4.
+
+### Corte 4 — consola segura y legible
+
+- La página crea nodos DOM y asigna pregunta, workspace, intención, especialista, fuentes, títulos, chunks, textos, puntajes, motivo y respuesta mediante `textContent`; ningún dato de respuesta se interpola como HTML.
+- Pregunta y workspace se envían con `encodeURIComponent`. Los tres veredictos tienen estilos inequívocos, el fragmento con mayor puntaje queda marcado y la respuesta nula muestra una abstención explícita.
+- El servidor local devolvió los tres resultados exigidos: Pro `APROBADO` con 1.0, contraseña `DUDOSO` con 0.566 y Enterprise `SIN_EVIDENCIA` con 0.373 y respuesta nula.
+- La prueba hostil preservó literalmente sintaxis `<img onerror>` y `<script>` en la API sin insertarla en la plantilla. No había motor de navegador para ejecutar el DOM; la evidencia combina el contrato automatizado y HTTP real.
+- No se tomó la captura Enterprise: permanece reservada para la verificación final del corte 8.
