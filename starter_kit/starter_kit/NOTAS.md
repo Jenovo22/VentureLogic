@@ -2,9 +2,9 @@
 
 ## Resumen
 
-- Estado general: **INCOMPLETO**. Se completaron el clasificador, el reporte por intención, la recuperación heredada y la consola del ejercicio 6.
-- Completado: `classify_intent()`, `count_messages_by_intent()`, la recuperación aislada con registro de correcciones, la orquestación asíncrona y la interfaz segura de evidencia.
-- Pendiente: ejercicios 4 y 5, auditoría final, captura de pantalla y verificación desde un clon nuevo.
+- Estado general: **INCOMPLETO**. Se completaron el clasificador, el reporte por intención, la recuperación heredada, el verificador v2 y la consola del ejercicio 6.
+- Completado: `classify_intent()`, `count_messages_by_intent()`, la recuperación aislada con registro de correcciones, el verificador v2 no reescritor, la orquestación asíncrona y la interfaz segura de evidencia.
+- Pendiente: ejercicio 5, auditoría final, captura de pantalla y verificación desde un clon nuevo.
 - Motivo: la entrega se construye en cortes autónomos para preservar evidencia y facilitar la revisión.
 
 ## Tiempo
@@ -16,7 +16,7 @@
 | Ejercicio 1 | **INCOMPLETO — horas reales pendientes** |
 | Ejercicio 2 | Implementación completada; **INCOMPLETO — horas reales pendientes** |
 | Ejercicio 3 | Implementación completada; **INCOMPLETO — horas reales pendientes** |
-| Ejercicio 4 | **INCOMPLETO — no iniciado** |
+| Ejercicio 4 | Implementación documental completada; **INCOMPLETO — horas reales pendientes** |
 | Ejercicio 5 | **INCOMPLETO — no iniciado** |
 | Ejercicio 6 | Núcleo e interfaz completados; **INCOMPLETO — horas reales y captura final pendientes** |
 
@@ -51,7 +51,7 @@ La implementación elimina el caché y la salida temporal, obtiene respuestas y 
 
 ## Ejercicio 4 — qué movería a código determinista
 
-**INCOMPLETO — nota pendiente hasta implementar y evaluar el verificador v2 (máximo 120 palabras).**
+Movería a código determinista la validación del esquema, la pertenencia de la fuente, la comparación literal de la cita, la presencia y coincidencia del chunk, los límites numéricos y la precedencia del veredicto. Son reglas cerradas, auditables y sensibles a valores exactos; un LLM puede variarlas o aceptar paráfrasis plausibles. Reservaría el LLM para explicar en lenguaje natural un resultado ya calculado, nunca para alterar los booleanos ni reescribir la respuesta. Incluso esa explicación quedaría restringida a los hechos observados. Así, el mismo JSON produce siempre el mismo veredicto y casos como una fuente inexistente, una cita no literal o una similitud exactamente igual a `0.55` no dependen del juicio probabilístico del modelo.
 
 ## Ejercicio 6 — cómo mejoraría el recuperador
 
@@ -138,3 +138,10 @@ Cambiaría la comparación léxica por recuperación semántica con embeddings: 
 - El ledger UTF-8 JSONL usa deduplicación estable, bloqueo de hilo, `flush`/`fsync`, estado `pending` y tiempo UTC. Un archivo ausente o vacío equivale a cero pendientes; sintaxis malformada falla explícitamente.
 - El registro predeterminado contiene un defecto real de la fixture: respuesta `a-4`, fuente `src-99-inexistente`, motivo `missing_source`. Permanece pendiente y **no autoriza** corregir fuentes, fixtures ni datos.
 - El RED inicial ejecutado contra la implementación heredada creó accidentalmente `/tmp/last_answers.json`; no se leyó su contenido. El proceso padre, con autorización específica para esa ruta, lo eliminó y verificó su ausencia. Las pruebas finales inspeccionan e interceptan el intento mediante mock, usan directorios temporales locales explícitos y no vuelven a sondear esa ruta real.
+
+### Corte 6 — verificador v2 y matriz de fixtures
+
+- El contrato exige respuesta, cita, fuente, chunk, similitud y evidencia autoritativa; devuelve solo el veredicto JSON cerrado y nunca una respuesta reescrita.
+- La cita debe ser una subcadena literal, sin normalización ni aceptación de paráfrasis. Por eso `a-3` es `RECHAZADO` aunque use `src-2` y tenga similitud `0.88`.
+- La precedencia rechaza primero fuentes inválidas y citas no literales. Evidencia válida desde `0.55` hasta menos de `0.75`, o evidencia real sin chunk, queda `DUDOSO`; desde `0.75` solo se aprueba si todos los controles pasan.
+- La matriz queda: `a-1` APROBADO; `a-2`, `a-3` y `a-4` RECHAZADO; `a-5` DUDOSO. Las fixtures permanecen intactas.
