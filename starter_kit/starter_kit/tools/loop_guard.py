@@ -13,6 +13,7 @@ Necesitamos una guardia en código.
 from __future__ import annotations
 
 import logging
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -46,13 +47,36 @@ class LoopGuard:
     """
 
     def __init__(self, max_calls: int = MAX_CALLS):
-        raise NotImplementedError("EJERCICIO 5")
+        self._max_calls = max_calls
+        self._counts: dict[tuple[str, str], int] = {}
+        # Un único lock vuelve atómicas las transiciones del estado compartido.
+        # La guardia no ejecuta trabajo externo dentro de la sección crítica.
+        self._lock = threading.Lock()
 
     def record(self, session_id: str, agent_name: str) -> int:
-        raise NotImplementedError("EJERCICIO 5")
+        key = (session_id, agent_name)
+        with self._lock:
+            attempted_count = self._counts.get(key, 0) + 1
+            if attempted_count > self._max_calls:
+                raise ToolLoopError(
+                    "Límite de llamadas excedido: "
+                    f"session={session_id!r}, agent={agent_name!r}, "
+                    f"count={attempted_count}, limit={self._max_calls}"
+                )
+            self._counts[key] = attempted_count
+            return attempted_count
 
     def reset(self, session_id: str) -> None:
-        raise NotImplementedError("EJERCICIO 5")
+        with self._lock:
+            keys = [key for key in self._counts if key[0] == session_id]
+            for key in keys:
+                del self._counts[key]
 
     def snapshot(self, session_id: str) -> dict[str, int]:
-        raise NotImplementedError("EJERCICIO 5")
+        with self._lock:
+            snapshot = {
+                agent_name: count
+                for (stored_session, agent_name), count in self._counts.items()
+                if stored_session == session_id
+            }
+        return snapshot
