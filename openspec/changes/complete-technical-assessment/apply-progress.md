@@ -6,13 +6,15 @@
 |---|---|
 | Mode | Standard (Strict TDD disabled) |
 | Delivery | Auto-chain using `feature-branch-chain` |
-| Completed tasks | 9 of 28 |
-| Current work unit | Slice 02 — async intent coverage report |
+| Completed tasks | 12 of 28 |
+| Current work unit | Slice 03 — async `consultar()` evidence core |
 | Tracker branch | `feat/complete-technical-assessment` |
-| Child branch | `feat/complete-technical-assessment-02-intent-report` |
+| Child branch | `feat/complete-technical-assessment-03-consultar-core` |
 | Baseline commit | `dfbcea27d7beb17e573a426c2939641a353aa946` |
 | Slice 1 commits | `784f01e0db477b9d6878484f7a45f46df7444995`, `cd5056dd234d84fe91b700cf643afdddf868d88f` |
 | Slice 2 implementation commit | `db84fa1a9a1de58d91a4961447c08d38fc0cb46f` |
+| Slice 2 receipt commit | `9d1035160179192a21ea92449f1aa81e95eaf188` |
+| Slice 3 implementation commit | `c1f9e1d` |
 
 ## Completed Tasks
 
@@ -25,6 +27,9 @@
 - [x] 2.1 Add RED coverage for report counts, unknown mapping, failures, logging, and singleton reuse.
 - [x] 2.2 Implement async singleton-backed intent coverage reporting.
 - [x] 2.3 Record Slice 2 decisions and factual verification evidence in `NOTAS.md`.
+- [x] 3.1 Add RED coverage for the exact shape, all fragments, true maximum, empty/no-overlap behavior, exact boundaries, numeric reasons, and literal response identity.
+- [x] 3.2 Implement the async `consultar()` core without changing the HTTP handler or protected retriever.
+- [x] 3.3 Record Slice 3 decisions and verification evidence in `NOTAS.md`, run checks, and measure the slice.
 
 ## Work Unit Evidence
 
@@ -55,16 +60,33 @@
 | Review size | 325 authored additions plus deletions versus immediate prior branch `feat/complete-technical-assessment-01-classifier`, including unchanged historical `verify-report.md` added for reproducible planning state; below the 400-line policy. |
 | Rollback boundary | Revert Slice 2 changes to `tools/intent_report_tool.py`, `tests/test_intent_report.py`, Slice 2 portions of `NOTAS.md`, tasks/progress updates, and the newly tracked historical `verify-report.md`; Slice 1 remains intact. |
 
+### Slice 3 — async `consultar()` evidence core
+
+| Evidence | Result |
+|---|---|
+| RED | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_app.py -v` before implementation → exit 1; 9 failed in 0.11s. |
+| Focused GREEN | Same focused command after implementation → exit 0; 9 passed in 0.04s. |
+| Classifier regression | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_classify_intent.py -v` → exit 0; 18 passed in 0.04s. |
+| Report regression | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_intent_report.py -v` → exit 0; 8 passed in 0.03s. |
+| Full suite | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest` → exit 0; 35 passed in 0.08s. |
+| Runtime harness | Existing `Handler` served a read-only `/api/consulta` request at `127.0.0.1:8000` → HTTP 200; exact 8 keys, 4 fragments, `APROBADO`, and response text identical to the maximum-score fragment. No Handler/page edit was needed. |
+| Behavioral invariants | Tests prove unsorted maximum selection, copied preservation of every fragment, empty/no-overlap abstention, exact raw boundaries `0.549999`/`0.55`/`0.749999`/`0.75`, reasons containing observed values and thresholds, and exact top-text response identity. |
+| Integrity and side effects | Protected/dependency range diff is empty; Slice 3 source/tests contain no `/tmp` reference; no protected, dependency, fixture, Handler, page, source-data, or `/tmp` change was made. |
+| Review size | 326 additions plus deletions versus immediate predecessor receipt `9d10351`, including the preserved 109-line Slice 2 verify-report extension; below the 400-line policy. The functional implementation commit contains 169 insertions and 6 deletions. |
+| Rollback boundary | Revert Slice 3 changes to the `consultar()` section of `app.py`, Slice 3 core cases in `tests/test_app.py`, the Slice 3 portions of `NOTAS.md`, and corresponding task/progress receipt updates; retain the existing Handler/page and Slices 1–2. |
+
 ## Branch Boundary
 
 ```text
 dfbcea2 tracker baseline: feat/complete-technical-assessment
    └── 784f01e Slice 01 implementation
         └── cd5056d Slice 01 receipt: feat/complete-technical-assessment-01-classifier
-             └── db84fa1 Slice 02 implementation: feat/complete-technical-assessment-02-intent-report
+             └── db84fa1 Slice 02 implementation
+                  └── 9d10351 Slice 02 receipt: feat/complete-technical-assessment-02-intent-report
+                       └── c1f9e1d Slice 03 implementation: feat/complete-technical-assessment-03-consultar-core
 ```
 
-The intended Slice 2 child review base is `feat/complete-technical-assessment-01-classifier`. No branch was pushed and no PR was created.
+The intended Slice 3 child review base is `feat/complete-technical-assessment-02-intent-report` at receipt `9d10351`. No branch was pushed and no PR was created.
 
 ## Protected Baseline
 
@@ -82,9 +104,9 @@ The intended Slice 2 child review base is `feat/complete-technical-assessment-01
 
 - Design deviation: none.
 - CodeGraph initialization was attempted once and failed because the upstream `codegraph` executable is unavailable; bounded file inspection was used as the documented fallback.
-- The full suite is intentionally not green yet because `consultar()` belongs to the next unauthorized slice.
+- The full suite is green for the currently implemented capabilities; later planned suites and console UI work remain pending.
 - Historical Slice 1 findings remain preserved verbatim in `verify-report.md`; that report was added to version control without rewriting it.
 
 ## Remaining Scope
 
-Tasks 3.1 through 8.4 remain unchecked. The next autonomous work unit is Slice 03, the async `consultar()` evidence core.
+Tasks 4.1 through 8.4 remain unchecked. The next autonomous work unit is Slice 04, the safe console UI; it was not implemented in this batch.
