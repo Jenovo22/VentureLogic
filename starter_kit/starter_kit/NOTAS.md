@@ -2,9 +2,9 @@
 
 ## Resumen
 
-- Estado general: **INCOMPLETO**. Se completaron los cortes del clasificador y del reporte de cobertura por intención.
-- Completado: `classify_intent()` y `count_messages_by_intent()` conforme a sus contratos.
-- Pendiente: ejercicios 3 a 6, auditoría final, evidencia de consola y verificación desde un clon nuevo.
+- Estado general: **INCOMPLETO**. Se completaron el clasificador, el reporte por intención y el núcleo `consultar()`.
+- Completado: `classify_intent()`, `count_messages_by_intent()` y la orquestación asíncrona de evidencia.
+- Pendiente: ejercicios 3 a 5, interfaz del ejercicio 6, auditoría final, evidencia de consola y verificación desde un clon nuevo.
 - Motivo: la entrega se construye en cortes autónomos para preservar evidencia y facilitar la revisión.
 
 ## Tiempo
@@ -18,7 +18,7 @@
 | Ejercicio 3 | **INCOMPLETO — no iniciado** |
 | Ejercicio 4 | **INCOMPLETO — no iniciado** |
 | Ejercicio 5 | **INCOMPLETO — no iniciado** |
-| Ejercicio 6 | **INCOMPLETO — no iniciado** |
+| Ejercicio 6 | Núcleo `consultar()` completado; **INCOMPLETO — interfaz y horas reales pendientes** |
 
 ## Decisiones
 
@@ -70,6 +70,9 @@ Las reglas ofrecen resultados deterministas, rápidos y auditables: ante el mism
 - Integridad posterior: todos los hashes protegidos coinciden; el literal fuente y el hash canónico de `INTENTS` coinciden con la línea base.
 - RED del reporte: 8 fallos en 0.08 s antes de implementar el comportamiento.
 - GREEN del reporte: 8 pruebas aprobadas en 0.05 s; la suite completa quedó en 26 aprobadas y 2 fallidas por `consultar()`, fuera de este corte.
+- RED de `consultar()`: 9 fallos en 0.11 s antes de implementar el núcleo.
+- GREEN de `consultar()`: 9 pruebas aprobadas en 0.04 s; regresiones de clasificador y reporte aprobadas, y suite completa 35/35 en 0.08 s.
+- Smoke HTTP del corte: `/api/consulta` devolvió 200, las 8 claves exactas, 4 fragmentos, `APROBADO` y la respuesta literal del fragmento con mayor similitud.
 
 ## Captura de abstención Enterprise
 
@@ -97,3 +100,11 @@ Las reglas ofrecen resultados deterministas, rápidos y auditables: ante el mism
 - Los resultados inactivos o no registrados se acumulan en `desconocido`; así, la suma siempre coincide con los mensajes recuperados.
 - Los errores operativos se propagan y registran solo la operación y el workspace, sin cuerpos de mensajes, credenciales ni texto de la excepción.
 - Evidencia temporal del runner: RED 8 fallos en 0.08 s; GREEN 8 aprobadas en 0.05 s. Estas duraciones no sustituyen las horas reales, que siguen pendientes.
+
+### Corte 3 — núcleo asíncrono de consulta
+
+- `workspace_id` se devuelve como metadato de la solicitud; no filtra el recuperador protegido, cuya API global se conserva sin cambios.
+- Todos los fragmentos se copian y mantienen en el orden recuperado; el veredicto y la respuesta usan el máximo real aunque la entrada no esté ordenada.
+- Los límites se comparan sin redondear: menos de `0.55` abstiene, desde `0.55` hasta menos de `0.75` es `DUDOSO`, y desde `0.75` es `APROBADO`.
+- Cada motivo expone el valor observado o la ausencia de fragmentos y los umbrales aplicables; la respuesta aprobada o dudosa conserva exactamente el texto superior.
+- La interfaz existente no se modificó: el renderizado seguro y la demostración visual pertenecen al corte 4.

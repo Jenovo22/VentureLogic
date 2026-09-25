@@ -22,6 +22,9 @@ import logging
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 
+from config.intents import classify_intent, specialist_for
+from shared.retriever import search
+
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger("consola")
 
@@ -73,7 +76,53 @@ async def consultar(pregunta: str, workspace_id: str = "acme") -> dict:
 
     El `motivo` lo lee un humano cuando algo sale raro: que diga números.
     """
-    raise NotImplementedError("EJERCICIO 6")
+    intencion = classify_intent(pregunta)
+    especialista = specialist_for(intencion)
+    fragmentos = [dict(fragmento) for fragmento in await search(pregunta)]
+
+    if not fragmentos:
+        veredicto = "SIN_EVIDENCIA"
+        motivo = (
+            "No se recuperaron fragmentos; se requiere una similitud mínima "
+            f"de {UMBRAL_MINIMO:g} para responder."
+        )
+        respuesta = None
+    else:
+        mejor_fragmento = max(fragmentos, key=lambda fragmento: fragmento["similitud"])
+        similitud = mejor_fragmento["similitud"]
+
+        if similitud < UMBRAL_MINIMO:
+            veredicto = "SIN_EVIDENCIA"
+            motivo = (
+                f"Similitud máxima {similitud:g}, por debajo del mínimo de "
+                f"{UMBRAL_MINIMO:g}; la aprobación requiere {UMBRAL_ALTO:g}."
+            )
+            respuesta = None
+        elif similitud < UMBRAL_ALTO:
+            veredicto = "DUDOSO"
+            motivo = (
+                f"Similitud máxima {similitud:g}, desde el mínimo de "
+                f"{UMBRAL_MINIMO:g} pero por debajo de {UMBRAL_ALTO:g}."
+            )
+            respuesta = mejor_fragmento["texto"]
+        else:
+            veredicto = "APROBADO"
+            motivo = (
+                f"Similitud máxima {similitud:g}, igual o superior a "
+                f"{UMBRAL_ALTO:g} y al mínimo de {UMBRAL_MINIMO:g}."
+            )
+            respuesta = mejor_fragmento["texto"]
+
+    return {
+        "pregunta": pregunta,
+        "workspace": workspace_id,
+        "intencion": intencion,
+        "especialista": especialista,
+        "fragmentos": fragmentos,
+        "veredicto": veredicto,
+        "motivo": motivo,
+        "respuesta": respuesta,
+    }
 
 
 # ---------------------------------------------------------------------------
