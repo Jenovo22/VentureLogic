@@ -69,7 +69,7 @@ Usable, literal, valid-source evidence at or above `0.55` but lacking required t
 
 ### Requirement: Emit Strict Non-Rewriting Verdicts and Fixture Matrix
 
-Verifier v2 MUST emit only the documented strict JSON verdict contract, MUST provide a reason grounded in observed checks, and MUST NOT rewrite or improve the candidate answer. The fixture matrix MUST preserve v1 and document deterministic expected outcomes for a-1 through a-5.
+Verifier v2 MUST emit only the documented strict JSON verdict contract, MUST provide a reason grounded in observed checks, and MUST NOT rewrite or improve the candidate answer. The fixture matrix MUST preserve v1 and document deterministic expected outcomes for a-1 through a-5. For a-3, the matrix MUST require `RECHAZADO` because its claimed citation is not a literal substring of the authoritative source, despite its valid source identifier and high similarity score.
 
 #### Scenario: Strict output contract
 - GIVEN any valid verifier input
@@ -80,7 +80,8 @@ Verifier v2 MUST emit only the documented strict JSON verdict contract, MUST pro
 #### Scenario: Fixture verdict matrix
 - GIVEN fixture answers a-1 through a-5
 - WHEN their documented expectations are inspected
-- THEN a-1 MUST be `APROBADO`, a-2 `RECHAZADO`, a-3 `APROBADO`, a-4 `RECHAZADO`, and a-5 `DUDOSO`
+- THEN a-1 MUST be `APROBADO`, a-2 `RECHAZADO`, a-3 `RECHAZADO`, a-4 `RECHAZADO`, and a-5 `DUDOSO`
+- AND the a-3 reason MUST identify that `Configuración > Equipo` is a nonliteral paraphrase of the authoritative `Configuración, luego a Equipo` wording, despite the valid `src-2` reference and `0.88` similarity
 - AND each entry MUST include a one-line reason tied to literalness, source validity, similarity, or traceability
 
 ---
