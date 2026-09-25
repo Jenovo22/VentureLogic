@@ -172,6 +172,7 @@
 | Runtime / clean clone | Local no-hardlink clone of `3098b69` under the authorized workspace: 60 passed in 0.14s; verifier exit 0; page HTTP 200/4532 bytes; APROBADO 1.0, DUDOSO 0.666, SIN_EVIDENCIA 0.373 with null response. Clone and runtime state were removed. |
 | Integrity | Protected paths, `requirements.txt`, canonical `INTENTS`, and historical `verify-report.md` SHA-256 `359f29fdad767ee53b0d330f9a8244ace86b4e1d86bdbbcf514911966186baf0` remain unchanged. |
 | Screenshot limitation | No installed Chromium, Chrome, Firefox, Playwright, Selenium, Pyppeteer, wkhtmltoimage, CutyCapt, or Pageres. No PNG was fabricated; task 8.4 remains unchecked. |
+| Review size | 372 authored additions plus deletions against Slice 7 receipt `3de37d6`, excluding no generated PNG because none exists; below the 400-line policy. |
 | Rollback boundary | Revert `tools/verify_delivery.py`, `tests/test_verify_delivery.py`, final `NOTAS.md` edits, and Slice 8 task/progress updates; preserve Slices 1–7 and all protected inputs. |
 
 ## Branch Boundary
