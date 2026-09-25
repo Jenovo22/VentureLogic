@@ -83,6 +83,7 @@ Cambiaría la comparación léxica por recuperación semántica con embeddings: 
 - Prueba hostil HTTP: pregunta con `<img onerror>` y `<script>` y workspace con `<script>` conservaron el texto exacto en JSON; la página usa `createElement`/`textContent`, no contiene `innerHTML` y codifica ambos parámetros.
 - Limitación: no había navegador ni automatización disponible; se usaron contratos estáticos, pruebas de página y tráfico HTTP real. La captura final sigue pendiente para el corte 8.
 - RED de recuperación heredada: 11 casos ejecutados contra el código original; 9 fallaron y 2 pasaron en 0.15 s. Los fallos expusieron contaminación por caché, pérdida de propiedad, lecturas de fuente y ausencia del ledger; los dos pases iniciales motivaron reforzar los escenarios de singleton y salida temporal antes de GREEN.
+- Efecto lateral durante ese RED: la implementación heredada creó `/tmp/last_answers.json`. Su contenido no se leyó. Con autorización específica, el proceso padre eliminó ese archivo y verificó su ausencia; esta recuperación no autoriza acceso a otras rutas externas.
 - GREEN del corte 5: 11/11 pruebas de ledger y recuperación aprobaron en 0.06 s. El ledger predeterminado registró el defecto real `a-4`/`src-99-inexistente` como `missing_source`; dos respuestas válidas de `acme` se conservaron.
 
 ## Captura de abstención Enterprise
@@ -136,4 +137,4 @@ Cambiaría la comparación léxica por recuperación semántica con embeddings: 
 - Una fuente ausente, malformada o sin título genera log y registro durable con motivo distinto; la respuesta afectada se omite y las respuestas válidas conservan su esquema y disponibilidad.
 - El ledger UTF-8 JSONL usa deduplicación estable, bloqueo de hilo, `flush`/`fsync`, estado `pending` y tiempo UTC. Un archivo ausente o vacío equivale a cero pendientes; sintaxis malformada falla explícitamente.
 - El registro predeterminado contiene un defecto real de la fixture: respuesta `a-4`, fuente `src-99-inexistente`, motivo `missing_source`. Permanece pendiente y **no autoriza** corregir fuentes, fixtures ni datos.
-- No se accedió a la ruta histórica `/tmp/last_answers.json`: el RED interceptó su intento mediante mock y GREEN elimina toda salida temporal compartida. Los únicos archivos temporales de pruebas fueron proporcionados por `tmp_path`.
+- El RED inicial ejecutado contra la implementación heredada creó accidentalmente `/tmp/last_answers.json`; no se leyó su contenido. El proceso padre, con autorización específica para esa ruta, lo eliminó y verificó su ausencia. Las pruebas finales inspeccionan e interceptan el intento mediante mock, usan directorios temporales locales explícitos y no vuelven a sondear esa ruta real.

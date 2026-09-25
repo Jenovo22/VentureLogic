@@ -6,10 +6,10 @@
 |---|---|
 | Mode | Standard (Strict TDD disabled) |
 | Delivery | Auto-chain using `feature-branch-chain` |
-| Completed tasks | 15 of 28 |
-| Current work unit | Slice 04 — safe human-readable console |
+| Completed tasks | 19 of 28 |
+| Current work unit | Slice 05 — isolated legacy retrieval and pending-correction ledger |
 | Tracker branch | `feat/complete-technical-assessment` |
-| Child branch | `feat/complete-technical-assessment-04-safe-console` |
+| Child branch | `feat/complete-technical-assessment-05b-legacy-integration` |
 | Baseline commit | `dfbcea27d7beb17e573a426c2939641a353aa946` |
 | Slice 1 commits | `784f01e0db477b9d6878484f7a45f46df7444995`, `cd5056dd234d84fe91b700cf643afdddf868d88f` |
 | Slice 2 implementation commit | `db84fa1a9a1de58d91a4961447c08d38fc0cb46f` |
@@ -17,6 +17,9 @@
 | Slice 3 implementation commit | `c1f9e1d` |
 | Slice 3 receipt commit | `86f5707` |
 | Slice 4 implementation commit | `2dd0bde` |
+| Slice 4 receipt commit | `28b7102054bb09f578d8eab74df4301523b34b1a` |
+| Slice 5a implementation commit | `89fedf47f208bcd71b7873cc8d18e6dcec60aacb` |
+| Slice 5b implementation commit | `65b1455f3f53eb636aa37547e9c1680ef85a51b1` |
 
 ## Completed Tasks
 
@@ -35,6 +38,10 @@
 - [x] 4.1 Add RED safe-render, URL-encoding, complete-page, verdict-style, selected-fragment, and abstention contract tests.
 - [x] 4.2 Replace raw JSON with dependency-free DOM rendering through `createElement` and `textContent` sinks only.
 - [x] 4.3 Demonstrate all three mandated verdicts through the real local API and record Slice 4 evidence without fabricating the final screenshot.
+- [x] 5.1 Add RED coverage for request isolation, batching, mocked shared-temp output, and invalid-source handling.
+- [x] 5.2 Add the durable, thread-safe, deduplicated pending-correction ledger.
+- [x] 5.3 Repair legacy retrieval with singleton reuse, inclusive filtering, one source-table read, fresh results, and omission recording.
+- [x] 5.4 Record the legacy defects, genuine pending record, split topology, verification, and approved review-size exception.
 
 ## Work Unit Evidence
 
@@ -97,6 +104,22 @@
 | Review size | 143 authored additions plus deletions in the functional commit (`app.py`, `tests/test_app.py`, `NOTAS.md`). The complete child range through the pending receipt is 188 additions plus deletions across 5 files, below both the 180–300 Slice 4 forecast and 400-line policy. |
 | Rollback boundary | Revert Slice 4 changes to the page-only `PAGINA` section of `app.py`, the three safe-render tests in `tests/test_app.py`, Slice 4 portions of `NOTAS.md`, and corresponding task/progress receipt updates. Retain `consultar()` and all Slices 1–3 behavior. |
 
+### Slice 5 — isolated legacy retrieval and pending-correction ledger
+
+| Evidence | Result |
+|---|---|
+| Initial RED | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_correction_ledger.py tests/test_legacy_answers.py -v` against the original legacy implementation → 11 collected, 9 failed, 2 passed. The inherited implementation accidentally created `/tmp/last_answers.json`; its content was not read. The parent removed exactly that authorized path and verified absence before closure. |
+| Focused ledger GREEN | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_correction_ledger.py -v --basetemp=.pytest-tmp-slice5-ledger` → exit 0; 3 passed in 0.03s. |
+| Focused legacy GREEN | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_legacy_answers.py -v --basetemp=.pytest-tmp-slice5-legacy` → exit 0; 8 passed in 0.05s. |
+| Classifier/report/app regressions | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_classify_intent.py tests/test_intent_report.py tests/test_app.py -v --basetemp=.pytest-tmp-slice5-regressions` → exit 0; 38 passed in 0.13s. |
+| Full suite | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest --basetemp=.pytest-tmp-slice5-full` → exit 0; 49 passed in 0.17s. |
+| Runtime harness | N/A — Slice 5 is a tool-level retrieval/ledger unit with no HTTP route. Consecutive and concurrent request scenarios run through the real async function under focused pytest coverage. |
+| Behavioral invariants | Inspection and tests prove singleton-only database access, one answer read, inclusive thresholding, fresh early `[]`, one batched source read, caller/concurrency ownership, unchanged enriched schema, distinct logged omission reasons, durable dedupe, malformed-ledger failure, and mocked interception of the historical shared-temp write without probing the real path. |
+| Pending ledger | One genuine unresolved record remains: workspace `acme`, answer `a-4`, source `src-99-inexistente`, reason `missing_source`, status `pending`. It is evidence only and does not authorize remediation; protected fixture/source data remains unchanged. |
+| Integrity and dependencies | The SHA-256 audit checked all 7 protected paths with zero mismatches; canonical `INTENTS` hash matched `6a0f75403c5f47e871c27c63da88d52202b8e472cfc70592826ede16f90d79c0`. This includes the unchanged `requirements.txt` dependency declaration. `git diff --check` exited 0 with no output. Historical `verify-report.md` remained unchanged. |
+| Review size | Slice 5a is 175 authored changed lines. Slice 5b is 416 total changed lines including one generated ledger line, therefore 415 authored changed lines. The maintainer explicitly approved `size:exception` for Slice 5b; no code, tests, comments, or documentation were compressed to meet the budget. |
+| Rollback boundary | Slice 5a can be reverted through `tools/correction_ledger.py` and `tests/test_correction_ledger.py`. Slice 5b can be reverted through `tools/legacy_answers_tool.py`, `tests/test_legacy_answers.py`, `evidence/pending_source_corrections.jsonl`, the Slice 5 sections of `NOTAS.md`, and this tasks/progress receipt. Retain Slices 1–4 and do not alter protected fixtures/source data. |
+
 ## Branch Boundary
 
 ```text
@@ -107,10 +130,13 @@ dfbcea2 tracker baseline: feat/complete-technical-assessment
                   └── 9d10351 Slice 02 receipt: feat/complete-technical-assessment-02-intent-report
                         └── c1f9e1d Slice 03 implementation
                              └── 86f5707 Slice 03 receipt: feat/complete-technical-assessment-03-consultar-core
-                                  └── 2dd0bde Slice 04 implementation: feat/complete-technical-assessment-04-safe-console
+                                   └── 2dd0bde Slice 04 implementation: feat/complete-technical-assessment-04-safe-console
+                                        └── 28b7102 Slice 04 receipt
+                                             └── 89fedf4 Slice 05a ledger infrastructure: feat/complete-technical-assessment-05a-correction-ledger
+                                                  └── 65b1455 Slice 05b legacy integration: feat/complete-technical-assessment-05b-legacy-integration
 ```
 
-The intended Slice 4 child review base is `feat/complete-technical-assessment-03-consultar-core` at receipt `86f5707`. No branch was pushed and no PR was created. The progress receipt commit containing this artifact is reported from `HEAD` after persistence because a commit cannot contain its own hash.
+The Slice 5a child starts at Slice 4 receipt `28b7102`; Slice 5b starts at Slice 5a commit `89fedf4` and ends at implementation commit `65b1455` plus this closure receipt. This follows `feature-branch-chain`; no branch was pushed and no PR was created. The receipt commit containing this artifact is reported from `HEAD` after persistence because a commit cannot contain its own hash.
 
 ## Protected Baseline
 
@@ -127,11 +153,13 @@ The intended Slice 4 child review base is `feat/complete-technical-assessment-03
 ## Deviations and Issues
 
 - Design deviation: none.
-- CodeGraph initialization was attempted once and failed because the upstream `codegraph` executable is unavailable; bounded file inspection was used as the documented fallback.
+- Historical Slice 4 evidence recorded that CodeGraph initialization failed and bounded inspection was used. During Slice 5 closure, project-local CodeGraph initialization succeeded and its indexed source was used for acceptance inspection.
 - Browser automation was unavailable; static DOM-sink checks and real HTTP requests provide the available injection evidence, while final browser screenshot capture remains task 8.4.
+- The original Slice 5 RED accidentally created `/tmp/last_answers.json`. Its content was not read; the parent used authorization limited to that exact path to remove it and verify absence. Closure tests used mocks and repository-local pytest base directories and did not probe the real path.
+- Slice 5b exceeds the review budget by 15 authored lines after one honest split; the maintainer approved `size:exception` for its 415 authored lines.
 - The full suite is green for the currently implemented capabilities; later planned capabilities remain pending.
 - Historical Slice 1 findings remain preserved verbatim in `verify-report.md`; that report was added to version control without rewriting it.
 
 ## Remaining Scope
 
-Tasks 5.1 through 8.4 remain unchecked. The next autonomous work unit is Slice 05, isolated legacy retrieval and its correction ledger; it was not implemented in this batch.
+Tasks 6.1 through 8.4 remain unchecked: verifier v2 and fixture matrix (6.1–6.3), thread-safe LoopGuard (7.1–7.2), and final delivery compliance/fresh-clone proof (8.1–8.4). The next autonomous work unit is Slice 06; no 6.x–8.x task was implemented in this batch.
