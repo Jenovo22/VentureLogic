@@ -1,37 +1,38 @@
-# Notas de entrega — INCOMPLETO: nombre pendiente de la persona candidata
+# Notas de entrega — Jeronimo Novoa Giraldo
 
 ## Resumen
 
-- Estado general: **INCOMPLETO**. Se completaron los seis ejercicios; quedan la auditoría final, la evidencia de entrega y la verificación desde un clon nuevo.
+- Estado general: **PARCIAL**. Se completaron los seis ejercicios, el verificador, la auditoría y la prueba desde un clon nuevo. Falta únicamente la captura obligatoria porque no existe un navegador o motor de captura instalado.
 - Completado: `classify_intent()`, `count_messages_by_intent()`, la recuperación aislada con registro de correcciones, el verificador v2 no reescritor, `LoopGuard`, la orquestación asíncrona y la interfaz segura de evidencia.
-- Pendiente: auditoría final, captura de pantalla y verificación desde un clon nuevo.
+- Pendiente: captura real de la abstención Enterprise; no se instaló software ni se sustituyó por evidencia textual.
 - Motivo: la entrega se construye en cortes autónomos para preservar evidencia y facilitar la revisión.
 
 ## Tiempo
 
 | Dato | Estado |
 |---|---|
-| Inicio real | **INCOMPLETO — pendiente de dato proporcionado por la persona candidata** |
-| Entrega real | **INCOMPLETO — todavía no ocurrió** |
-| Ejercicio 1 | **INCOMPLETO — horas reales pendientes** |
-| Ejercicio 2 | Implementación completada; **INCOMPLETO — horas reales pendientes** |
-| Ejercicio 3 | Implementación completada; **INCOMPLETO — horas reales pendientes** |
-| Ejercicio 4 | Implementación documental completada; **INCOMPLETO — horas reales pendientes** |
-| Ejercicio 5 | Implementación completada; **INCOMPLETO — horas reales pendientes** |
-| Ejercicio 6 | Núcleo e interfaz completados; **INCOMPLETO — horas reales y captura final pendientes** |
+| Inicio | 24/09/2026; no se proporcionó hora de inicio. |
+| Entrega de evidencia independiente | 25/09/2026 11:28:50 -05:00. La entrega sigue parcial por la captura pendiente. |
+| Ejercicio 1 | 1.2 h estimadas por la persona candidata. |
+| Ejercicio 2 | 1.4 h estimadas por la persona candidata. |
+| Ejercicio 3 | 1.7 h estimadas por la persona candidata. |
+| Ejercicio 4 | 1.5 h estimadas por la persona candidata. |
+| Ejercicio 5 | 1.8 h estimadas por la persona candidata. |
+| Ejercicio 6 | 2.0 h estimadas por la persona candidata. |
+| Total | 9.6 h estimadas; no son mediciones instrumentadas. |
 
 ## Decisiones
 
 ### Alta confianza
 
-1. Normalizar el texto elegible una sola vez con NFKD y eliminar marcas combinantes. Evita duplicar reglas por patrón y mantiene el clasificador dirigido por catálogo.
-2. Excluir líneas citadas antes de normalizar. Así, el contenido de conversaciones anteriores no puede decidir la intención actual.
-3. Reemplazar el resultado solo ante un patrón estrictamente más largo. Esto resuelve especificidad y conserva el orden del catálogo en empates.
+1. Normalizar el texto elegible una sola vez con NFKD y eliminar marcas combinantes. Revertiría esta decisión si pruebas con idiomas donde las marcas cambian el significado mostraran colisiones de intención.
+2. Excluir líneas citadas antes de normalizar. Revertiría esta decisión si conversaciones reales demostraran, mediante casos etiquetados, que la cita es contexto imprescindible y no una fuente de falsos positivos.
+3. Reemplazar el resultado solo ante un patrón estrictamente más largo. Revertiría esta decisión si un conjunto de evaluación mostrara que prioridad explícita o frecuencia reduce errores frente a longitud y orden de catálogo.
 
 ### Baja confianza
 
-1. **INCOMPLETO — pendiente de una decisión real y de la evidencia que justificaría revertirla.**
-2. **INCOMPLETO — pendiente de una decisión real y de la evidencia que justificaría revertirla.**
+1. Mantener `workspace_id` como metadato porque el recuperador protegido no permite filtrar. Lo revertiría cuando exista una API autorizada con filtro por workspace y pruebas que demuestren aislamiento entre clientes.
+2. Omitir respuestas con fuente inválida y registrarlas en el ledger sin ampliar el esquema. Lo revertiría si consumidores reales necesitaran cardinalidad estable y existiera una versión de contrato que admita un estado explícito de indisponibilidad.
 
 ## Ejercicio 1 — reglas vs LLM
 
@@ -63,7 +64,7 @@ Enchufaría la guardia inmediatamente antes de ejecutar cada herramienta, despu�
 
 ## Uso de IA
 
-**INCOMPLETO — la persona candidata debe declarar la herramienta utilizada, los ejercicios afectados y el uso exacto. No se presupone ni fabrica esa declaración.**
+Se utilizó OpenCode con el asistente OpenAI GPT-5.6 Sol en los seis ejercicios para análisis del repositorio, planificación SDD, apoyo de implementación, diseño y ejecución de pruebas, depuración y documentación. La persona candidata dirigió los requisitos y aprobó las decisiones. La aplicación no llama a una API de IA.
 
 ## Evidencia de verificación
 
@@ -90,6 +91,10 @@ Enchufaría la guardia inmediatamente antes de ejecutar cada herramienta, despu�
 - RED de `LoopGuard`: 7/7 pruebas fallaron en 0.05 s ante el `NotImplementedError` suministrado.
 - GREEN de `LoopGuard`: 7/7 pruebas aprobaron en 0.03 s; la prueba concurrente de 1000 llamadas aprobó 10 ejecuciones consecutivas sin perder incrementos.
 - Regresión del corte 7: suite completa 56/56 en 0.12 s.
+- Verificador final: 4/4 pruebas enfocadas; hashes protegidos, `INTENTS` y dependencias coinciden. El ledger conserva un pendiente válido: `acme`/`a-4`/`src-99-inexistente`, `missing_source`; no autoriza corrección.
+- Árbol principal: suite completa 60/60 en 0.13 s; `python -m tools.verify_delivery` terminó con código 0.
+- Clon local limpio de `3098b69fccfb3970581e7945b2b1d13136e77584`: 60/60 en 0.14 s; verificador con código 0; página HTTP 200 (4532 bytes); Pro `APROBADO` 1.0, contraseña `DUDOSO` 0.666 y Enterprise `SIN_EVIDENCIA` 0.373 con respuesta nula.
+- Limitación conocida: no se detectaron Chromium, Chrome, Firefox, Playwright, Selenium, Pyppeteer, wkhtmltoimage, CutyCapt ni Pageres. Por ello no existe `evidence/enterprise-abstention.png` y el estado no es completo.
 
 ## Captura de abstención Enterprise
 
@@ -97,7 +102,7 @@ Enchufaría la guardia inmediatamente antes de ejecutar cada herramienta, despu�
 
 ## Qué haría con una semana más
 
-**INCOMPLETO — pendiente de completar a partir de los resultados finales y limitaciones observadas.**
+Capturaría la evidencia Enterprise en un entorno con navegador ya autorizado, automatizaría ese smoke visual, añadiría un conjunto etiquetado de paráfrasis para medir recuperación semántica, revisaría semanalmente desconocidos y DUDOSO, y propondría una corrección de `a-4` solo con autorización explícita y una fuente válida verificable.
 
 ## Registro por cortes
 
@@ -157,3 +162,10 @@ Enchufaría la guardia inmediatamente antes de ejecutar cada herramienta, despu�
 - Un único `threading.Lock` protege cada transición compartida. El intento posterior al límite falla con sesión, agente, conteo intentado y límite, sin incrementar el valor almacenado.
 - `reset()` elimina solo las claves de la sesión solicitada y acepta sesiones desconocidas; `snapshot()` crea una copia dentro del bloqueo y la devuelve después de liberarlo.
 - La prueba concurrente ejecuta 1000 llamadas sobre una misma clave con límite suficiente y exige todos los conteos del 1 al 1000, además del valor final exacto.
+
+### Corte 8 — auditoría final
+
+- El verificador es de solo lectura, usa únicamente la biblioteca estándar y diferencia fallos de línea base, integridad y ledger mediante códigos de salida deterministas.
+- Las pruebas cubren éxito, divergencia protegida, JSONL malformado y registro pendiente válido sin convertirlo en fallo.
+- La auditoría y el clon limpio confirmaron código, dependencias, ledger y los tres resultados HTTP; el clon se eliminó después de recopilar la evidencia.
+- La captura permanece incompleta por falta exacta de capacidad de navegador; no se fabricó ni sustituyó.

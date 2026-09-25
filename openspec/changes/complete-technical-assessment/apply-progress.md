@@ -6,10 +6,10 @@
 |---|---|
 | Mode | Standard (Strict TDD disabled) |
 | Delivery | Auto-chain using `feature-branch-chain` |
-| Completed tasks | 24 of 28 |
-| Current work unit | Slice 07 — thread-safe LoopGuard |
+| Completed tasks | 27 of 28 |
+| Current work unit | Slice 08 — delivery verifier and final audit (partial) |
 | Tracker branch | `feat/complete-technical-assessment` |
-| Child branch | `feat/complete-technical-assessment-07-loop-guard` |
+| Child branch | `feat/complete-technical-assessment-08-final-audit` |
 | Baseline commit | `dfbcea27d7beb17e573a426c2939641a353aa946` |
 | Slice 1 commits | `784f01e0db477b9d6878484f7a45f46df7444995`, `cd5056dd234d84fe91b700cf643afdddf868d88f` |
 | Slice 2 implementation commit | `db84fa1a9a1de58d91a4961447c08d38fc0cb46f` |
@@ -25,6 +25,8 @@
 | Slice 6 implementation commit | `7283bd017a7be6001bb92dc62f8d720ef14762a0` |
 | Slice 6 receipt / Slice 7 base | `b4c6951f6d9603e1e57303fe75d7871216f782c4` |
 | Slice 7 implementation commit | `12ab58b961855525e6504a1e3b772ae41ce979ef` |
+| Slice 7 receipt / Slice 8 base | `3de37d6` |
+| Slice 8 candidate commit | `3098b69fccfb3970581e7945b2b1d13136e77584` |
 
 ## Completed Tasks
 
@@ -52,6 +54,10 @@
 - [x] 6.3 Record the verifier threshold/literalness decisions and bounded conceptual note in `NOTAS.md`.
 - [x] 7.1 Add RED coverage for limits, actionable excess errors, key isolation, reset ownership, snapshot ownership, and concurrent updates.
 - [x] 7.2 Implement the locked LoopGuard state transitions and record Slice 7 decisions and evidence in `NOTAS.md`.
+- [x] 8.1 Add the read-only delivery verifier and focused integrity/ledger tests.
+- [x] 8.2 Finalize truthful notes while retaining the unavailable-screenshot marker.
+- [x] 8.3 Audit integrity and prove tests, verifier, and HTTP outcomes from a clean local clone.
+- [ ] 8.4 Capture and validate the real Enterprise abstention PNG; blocked by missing browser capability.
 
 ## Work Unit Evidence
 
@@ -157,6 +163,17 @@
 | Review size | Slice 7 contains 179 authored additions plus deletions against Slice 6 receipt `b4c6951`, including this closure receipt; the implementation commit contains 144. This is below the 400-line policy. |
 | Rollback boundary | Revert `tools/loop_guard.py`, `tests/test_loop_guard.py`, the Slice 7 portions of `NOTAS.md`, task checkboxes, and this progress receipt. Preserve Slices 1–6 and all protected inputs. |
 
+### Slice 8 — delivery verifier and final audit
+
+| Evidence | Result |
+|---|---|
+| Focused tests | `.venv/bin/python -m pytest tests/test_verify_delivery.py -v --basetemp=.pytest-tmp-slice8-verifier` → exit 0; 4 passed in 0.04s (success, protected mismatch, malformed ledger, valid pending record). |
+| Full suite and verifier | Working tree at candidate `3098b69`: 60 passed in 0.13s; verifier exit 0 with 7 matching hashes, canonical `INTENTS`, unchanged dependencies, and pending `acme`/`a-4`/`src-99-inexistente`. |
+| Runtime / clean clone | Local no-hardlink clone of `3098b69` under the authorized workspace: 60 passed in 0.14s; verifier exit 0; page HTTP 200/4532 bytes; APROBADO 1.0, DUDOSO 0.666, SIN_EVIDENCIA 0.373 with null response. Clone and runtime state were removed. |
+| Integrity | Protected paths, `requirements.txt`, canonical `INTENTS`, and historical `verify-report.md` SHA-256 `359f29fdad767ee53b0d330f9a8244ace86b4e1d86bdbbcf514911966186baf0` remain unchanged. |
+| Screenshot limitation | No installed Chromium, Chrome, Firefox, Playwright, Selenium, Pyppeteer, wkhtmltoimage, CutyCapt, or Pageres. No PNG was fabricated; task 8.4 remains unchecked. |
+| Rollback boundary | Revert `tools/verify_delivery.py`, `tests/test_verify_delivery.py`, final `NOTAS.md` edits, and Slice 8 task/progress updates; preserve Slices 1–7 and all protected inputs. |
+
 ## Branch Boundary
 
 ```text
@@ -176,9 +193,11 @@ dfbcea2 tracker baseline: feat/complete-technical-assessment
                                                                   └── 7283bd0 Slice 06 verifier implementation: feat/complete-technical-assessment-06-verifier-v2
                                                                         └── b4c6951 Slice 06 receipt
                                                                              └── 12ab58b Slice 07 LoopGuard implementation: feat/complete-technical-assessment-07-loop-guard
+                                                                                  └── 3de37d6 Slice 07 receipt
+                                                                                       └── 3098b69 Slice 08 verifier candidate: feat/complete-technical-assessment-08-final-audit
 ```
 
-Slice 7 starts at Slice 6 receipt `b4c6951` and ends at implementation commit `12ab58b` plus this closure receipt. This follows `feature-branch-chain`; no branch was pushed and no PR was created. The receipt commit containing this artifact is reported from `HEAD` after persistence because a commit cannot contain its own hash.
+Slice 8 starts at Slice 7 receipt `3de37d6` and has committed candidate `3098b69`; this receipt records the later evidence-only edits. The chain remains local: no push or PR was performed.
 
 ## Protected Baseline
 
@@ -203,7 +222,8 @@ Slice 7 starts at Slice 6 receipt `b4c6951` and ends at implementation commit `1
 - Historical Slice 1 findings remain preserved verbatim in `verify-report.md`; that report was added to version control without rewriting it.
 - Slice 6 corrected the planned a-3 outcome before implementation: its `Configuración > Equipo` citation is not literal text from `Configuración, luego a Equipo`, so strict precedence requires `RECHAZADO`.
 - Slice 7 introduces no design deviation; one standard `threading.Lock` protects only shared counter transitions and snapshots.
+- Slice 8 introduces no design deviation. Browser capture is unavailable, so completion remains partial rather than substituting non-image evidence.
 
 ## Remaining Scope
 
-Tasks 8.1 through 8.4 remain unchecked: final delivery compliance, truthful final notes, protected/dependency audit, screenshot, and fresh-clone proof. The next autonomous work unit is Slice 08; no 8.x task was implemented in this batch.
+Task 8.4 remains unchecked. A real `enterprise-abstention.png` still requires an already-installed browser/screenshot capability; all independent Slice 8 work is complete and committed without source, fixture, dependency, or historical-report changes.
