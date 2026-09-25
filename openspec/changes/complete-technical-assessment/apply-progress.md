@@ -6,12 +6,13 @@
 |---|---|
 | Mode | Standard (Strict TDD disabled) |
 | Delivery | Auto-chain using `feature-branch-chain` |
-| Completed tasks | 6 of 28 |
-| Current work unit | Slice 01 — deterministic classifier and integrity baseline |
+| Completed tasks | 9 of 28 |
+| Current work unit | Slice 02 — async intent coverage report |
 | Tracker branch | `feat/complete-technical-assessment` |
-| Child branch | `feat/complete-technical-assessment-01-classifier` |
+| Child branch | `feat/complete-technical-assessment-02-intent-report` |
 | Baseline commit | `dfbcea27d7beb17e573a426c2939641a353aa946` |
-| Implementation commit | `784f01e0db477b9d6878484f7a45f46df7444995` |
+| Slice 1 commits | `784f01e0db477b9d6878484f7a45f46df7444995`, `cd5056dd234d84fe91b700cf643afdddf868d88f` |
+| Slice 2 implementation commit | `db84fa1a9a1de58d91a4961447c08d38fc0cb46f` |
 
 ## Completed Tasks
 
@@ -21,8 +22,13 @@
 - [x] 1.2 Prove the protected catalog and classifier tests are unchanged and all 18 cases pass.
 - [x] 1.3 Create truthful initial `NOTAS.md` content with explicit incomplete placeholders.
 - [x] 1.4 Run focused and full tests, record remaining failures, and measure the slice.
+- [x] 2.1 Add RED coverage for report counts, unknown mapping, failures, logging, and singleton reuse.
+- [x] 2.2 Implement async singleton-backed intent coverage reporting.
+- [x] 2.3 Record Slice 2 decisions and factual verification evidence in `NOTAS.md`.
 
 ## Work Unit Evidence
+
+### Slice 1 — classifier and integrity baseline
 
 | Evidence | Result |
 |---|---|
@@ -35,14 +41,30 @@
 | Review size | 222 authored additions plus deletions versus the tracker branch, including OpenSpec task/progress updates; below the 400-line policy. |
 | Rollback boundary | Revert child slice changes to `config/intents.py`, `NOTAS.md`, `evidence/protected_baseline.json`, task checkboxes, and this progress receipt. The supplied baseline commit and unrelated pending exercises remain intact. |
 
+### Slice 2 — intent coverage report
+
+| Evidence | Result |
+|---|---|
+| RED | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_intent_report.py -v` before implementation → exit 1; 8 failed in 0.08s. |
+| Focused GREEN | Same focused command after implementation → exit 0; 8 passed in 0.05s. |
+| Classifier regression | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest tests/test_classify_intent.py -v` → exit 0; 18 passed in 0.03s. |
+| Full suite | `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest` → exit 1; 26 passed, 2 failed in 0.08s. Both failures are unchanged `consultar()` placeholders assigned to Slice 3. |
+| Runtime harness | N/A — the async tool function is covered through `pytest-asyncio`; this slice adds no HTTP boundary. |
+| Behavioral invariants | Focused tests prove exact mixed/empty counts, sum equals retrieved messages, inactive/unregistered output maps to `desconocido`, missing workspace and operational errors propagate, repeated calls retain one instance per client, and logs exclude message bodies and credential-bearing exception text. |
+| Integrity and side effects | All 7 protected file hashes match the baseline. Slice 2 source/tests contain no `/tmp` path or file operation, and no `/tmp` path was accessed during this work unit. |
+| Review size | 325 authored additions plus deletions versus immediate prior branch `feat/complete-technical-assessment-01-classifier`, including unchanged historical `verify-report.md` added for reproducible planning state; below the 400-line policy. |
+| Rollback boundary | Revert Slice 2 changes to `tools/intent_report_tool.py`, `tests/test_intent_report.py`, Slice 2 portions of `NOTAS.md`, tasks/progress updates, and the newly tracked historical `verify-report.md`; Slice 1 remains intact. |
+
 ## Branch Boundary
 
 ```text
 dfbcea2 tracker baseline: feat/complete-technical-assessment
-   └── 784f01e Slice 01 implementation: feat/complete-technical-assessment-01-classifier
+   └── 784f01e Slice 01 implementation
+        └── cd5056d Slice 01 receipt: feat/complete-technical-assessment-01-classifier
+             └── db84fa1 Slice 02 implementation: feat/complete-technical-assessment-02-intent-report
 ```
 
-The intended child review base is `feat/complete-technical-assessment`. No branch was pushed and no PR was created.
+The intended Slice 2 child review base is `feat/complete-technical-assessment-01-classifier`. No branch was pushed and no PR was created.
 
 ## Protected Baseline
 
@@ -60,8 +82,9 @@ The intended child review base is `feat/complete-technical-assessment`. No branc
 
 - Design deviation: none.
 - CodeGraph initialization was attempted once and failed because the upstream `codegraph` executable is unavailable; bounded file inspection was used as the documented fallback.
-- The full suite is intentionally not green yet because Phase 2 tasks are not authorized in this slice.
+- The full suite is intentionally not green yet because `consultar()` belongs to the next unauthorized slice.
+- Historical Slice 1 findings remain preserved verbatim in `verify-report.md`; that report was added to version control without rewriting it.
 
 ## Remaining Scope
 
-Tasks 2.1 through 8.4 remain unchecked. The next autonomous work unit is Slice 02, the async intent coverage report.
+Tasks 3.1 through 8.4 remain unchecked. The next autonomous work unit is Slice 03, the async `consultar()` evidence core.
