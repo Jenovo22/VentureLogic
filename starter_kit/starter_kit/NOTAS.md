@@ -2,9 +2,9 @@
 
 ## Resumen
 
-- Estado general: **INCOMPLETO**. Se completaron el clasificador, el reporte por intención, la recuperación heredada, el verificador v2 y la consola del ejercicio 6.
-- Completado: `classify_intent()`, `count_messages_by_intent()`, la recuperación aislada con registro de correcciones, el verificador v2 no reescritor, la orquestación asíncrona y la interfaz segura de evidencia.
-- Pendiente: ejercicio 5, auditoría final, captura de pantalla y verificación desde un clon nuevo.
+- Estado general: **INCOMPLETO**. Se completaron los seis ejercicios; quedan la auditoría final, la evidencia de entrega y la verificación desde un clon nuevo.
+- Completado: `classify_intent()`, `count_messages_by_intent()`, la recuperación aislada con registro de correcciones, el verificador v2 no reescritor, `LoopGuard`, la orquestación asíncrona y la interfaz segura de evidencia.
+- Pendiente: auditoría final, captura de pantalla y verificación desde un clon nuevo.
 - Motivo: la entrega se construye en cortes autónomos para preservar evidencia y facilitar la revisión.
 
 ## Tiempo
@@ -17,7 +17,7 @@
 | Ejercicio 2 | Implementación completada; **INCOMPLETO — horas reales pendientes** |
 | Ejercicio 3 | Implementación completada; **INCOMPLETO — horas reales pendientes** |
 | Ejercicio 4 | Implementación documental completada; **INCOMPLETO — horas reales pendientes** |
-| Ejercicio 5 | **INCOMPLETO — no iniciado** |
+| Ejercicio 5 | Implementación completada; **INCOMPLETO — horas reales pendientes** |
 | Ejercicio 6 | Núcleo e interfaz completados; **INCOMPLETO — horas reales y captura final pendientes** |
 
 ## Decisiones
@@ -59,7 +59,7 @@ Cambiaría la comparación léxica por recuperación semántica con embeddings: 
 
 ## Ejercicio 5 — dónde enchufo la guardia
 
-**INCOMPLETO — nota pendiente hasta implementar y evaluar la guardia (máximo 150 palabras).**
+Enchufaría la guardia inmediatamente antes de ejecutar cada herramienta, después de resolver la sesión y el agente que solicita la llamada. `record(session_id, agent_name)` decide de forma atómica si la ejecución puede continuar; si supera el límite, se propaga `ToolLoopError` y la herramienta no se invoca. El bloqueo protege únicamente la lectura y actualización del contador, nunca la llamada externa, para no serializar trabajo independiente. Al terminar una sesión, su bloque `finally` llama a `reset(session_id)` aunque la consulta falle. Usaría `snapshot(session_id)` para adjuntar conteos a logs o métricas antes del reset, sin exponer el diccionario interno. El límite debería configurarse por política operativa, manteniendo la clave compuesta para que agentes y sesiones no se interfieran.
 
 ## Uso de IA
 
@@ -87,6 +87,9 @@ Cambiaría la comparación léxica por recuperación semántica con embeddings: 
 - GREEN del corte 5: 11/11 pruebas de ledger y recuperación aprobaron en 0.06 s. El ledger predeterminado registró el defecto real `a-4`/`src-99-inexistente` como `missing_source`; dos respuestas válidas de `acme` se conservaron.
 - Verificador v2: los 2 ejemplos JSON se parsearon con claves cerradas; la matriz derivada directamente de la fixture fue `a-1` APROBADO, `a-2`/`a-3`/`a-4` RECHAZADO y `a-5` DUDOSO.
 - Regresión del corte 6: suite completa 49/49 en 0.10 s; 7/7 hashes protegidos, `INTENTS`, dependencias, v1 y el informe histórico permanecieron sin cambios.
+- RED de `LoopGuard`: 7/7 pruebas fallaron en 0.05 s ante el `NotImplementedError` suministrado.
+- GREEN de `LoopGuard`: 7/7 pruebas aprobaron en 0.03 s; la prueba concurrente de 1000 llamadas aprobó 10 ejecuciones consecutivas sin perder incrementos.
+- Regresión del corte 7: suite completa 56/56 en 0.12 s.
 
 ## Captura de abstención Enterprise
 
@@ -147,3 +150,10 @@ Cambiaría la comparación léxica por recuperación semántica con embeddings: 
 - La cita debe ser una subcadena literal, sin normalización ni aceptación de paráfrasis. Por eso `a-3` es `RECHAZADO` aunque use `src-2` y tenga similitud `0.88`.
 - La precedencia rechaza primero fuentes inválidas y citas no literales. Evidencia válida desde `0.55` hasta menos de `0.75`, o evidencia real sin chunk, queda `DUDOSO`; desde `0.75` solo se aprueba si todos los controles pasan.
 - La matriz queda: `a-1` APROBADO; `a-2`, `a-3` y `a-4` RECHAZADO; `a-5` DUDOSO. Las fixtures permanecen intactas.
+
+### Corte 7 — guardia contra bucles
+
+- Los conteos usan la clave `(session_id, agent_name)`, por lo que agentes de una sesión y nombres idénticos entre sesiones permanecen aislados.
+- Un único `threading.Lock` protege cada transición compartida. El intento posterior al límite falla con sesión, agente, conteo intentado y límite, sin incrementar el valor almacenado.
+- `reset()` elimina solo las claves de la sesión solicitada y acepta sesiones desconocidas; `snapshot()` crea una copia dentro del bloqueo y la devuelve después de liberarlo.
+- La prueba concurrente ejecuta 1000 llamadas sobre una misma clave con límite suficiente y exige todos los conteos del 1 al 1000, además del valor final exacto.
