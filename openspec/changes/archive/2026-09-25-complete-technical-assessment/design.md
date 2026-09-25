@@ -133,7 +133,7 @@ The JSONL writer holds a `threading.Lock`, checks existing stable keys to avoid 
 }
 ```
 
-No revised-answer field is permitted. `casos_verificador.md` records a-1 APROBADO, a-2 RECHAZADO, a-3 APROBADO, a-4 RECHAZADO, and a-5 DUDOSO with one-line evidence-grounded reasons.
+No revised-answer field is permitted. `casos_verificador.md` records a-1 APROBADO, a-2 RECHAZADO, a-3 RECHAZADO, a-4 RECHAZADO, and a-5 DUDOSO with one-line evidence-grounded reasons. For a-3, the nonliteral `Configuración > Equipo` citation deterministically fails before its valid `src-2` source and `0.88` similarity can approve it.
 
 **Alternatives considered**: Return approved answers, allow prose around JSON, let the verifier improve answers, or infer source validity from a source ID alone.
 
