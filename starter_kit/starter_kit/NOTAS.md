@@ -2,9 +2,9 @@
 
 ## Resumen
 
-- Estado general: **INCOMPLETO**. Solo se implementó el primer corte: línea base de procedencia, manifiesto de integridad y clasificador de intención.
-- Completado: implementación de `classify_intent()` conforme al catálogo protegido.
-- Pendiente: ejercicios 2 a 6, auditoría final, evidencia de consola y verificación desde un clon nuevo.
+- Estado general: **INCOMPLETO**. Se completaron los cortes del clasificador y del reporte de cobertura por intención.
+- Completado: `classify_intent()` y `count_messages_by_intent()` conforme a sus contratos.
+- Pendiente: ejercicios 3 a 6, auditoría final, evidencia de consola y verificación desde un clon nuevo.
 - Motivo: la entrega se construye en cortes autónomos para preservar evidencia y facilitar la revisión.
 
 ## Tiempo
@@ -14,7 +14,7 @@
 | Inicio real | **INCOMPLETO — pendiente de dato proporcionado por la persona candidata** |
 | Entrega real | **INCOMPLETO — todavía no ocurrió** |
 | Ejercicio 1 | **INCOMPLETO — horas reales pendientes** |
-| Ejercicio 2 | **INCOMPLETO — no iniciado** |
+| Ejercicio 2 | Implementación completada; **INCOMPLETO — horas reales pendientes** |
 | Ejercicio 3 | **INCOMPLETO — no iniciado** |
 | Ejercicio 4 | **INCOMPLETO — no iniciado** |
 | Ejercicio 5 | **INCOMPLETO — no iniciado** |
@@ -68,6 +68,8 @@ Las reglas ofrecen resultados deterministas, rápidos y auditables: ante el mism
 - GREEN del clasificador: 18 pruebas aprobadas.
 - Suite completa posterior: 18 aprobadas y 3 fallidas. Los fallos restantes corresponden a `consultar()` (2) y `count_messages_by_intent()` (1), todavía no implementados.
 - Integridad posterior: todos los hashes protegidos coinciden; el literal fuente y el hash canónico de `INTENTS` coinciden con la línea base.
+- RED del reporte: 8 fallos en 0.08 s antes de implementar el comportamiento.
+- GREEN del reporte: 8 pruebas aprobadas en 0.05 s; la suite completa quedó en 26 aprobadas y 2 fallidas por `consultar()`, fuera de este corte.
 
 ## Captura de abstención Enterprise
 
@@ -87,3 +89,11 @@ Las reglas ofrecen resultados deterministas, rápidos y auditables: ante el mism
 - La coincidencia usa límites de token, selecciona el patrón más largo y conserva el orden del catálogo en empates.
 - Estado de pruebas: 18/18 pruebas enfocadas aprobadas; la suite completa conserva 3 fallos esperados por ejercicios todavía pendientes.
 - Tamaño authored del corte funcional: 143 líneas añadidas o eliminadas, sin contar los artefactos OpenSpec de progreso.
+
+### Corte 2 — reporte de cobertura por intención
+
+- Se reutilizan exclusivamente `get_db_client()` y `get_storage_client()`; dos reportes consecutivos mantienen una sola instancia de cada cliente.
+- Un workspace inexistente conserva el `KeyError` del almacenamiento porque no equivale a un workspace existente sin mensajes.
+- Los resultados inactivos o no registrados se acumulan en `desconocido`; así, la suma siempre coincide con los mensajes recuperados.
+- Los errores operativos se propagan y registran solo la operación y el workspace, sin cuerpos de mensajes, credenciales ni texto de la excepción.
+- Evidencia temporal del runner: RED 8 fallos en 0.08 s; GREEN 8 aprobadas en 0.05 s. Estas duraciones no sustituyen las horas reales, que siguen pendientes.
