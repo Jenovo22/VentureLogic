@@ -2,9 +2,9 @@
 
 ## Resumen
 
-- Estado general: **PARCIAL**. Se completaron los seis ejercicios, el verificador, la auditoría y la prueba desde un clon nuevo. Falta únicamente la captura obligatoria porque no existe un navegador o motor de captura instalado.
+- Estado general: **COMPLETO**. Se completaron los seis ejercicios, el verificador, la auditoría, la prueba desde un clon nuevo y la captura obligatoria desde la consola final real.
 - Completado: `classify_intent()`, `count_messages_by_intent()`, la recuperación aislada con registro de correcciones, el verificador v2 no reescritor, `LoopGuard`, la orquestación asíncrona y la interfaz segura de evidencia.
-- Pendiente: captura real de la abstención Enterprise; no se instaló software ni se sustituyó por evidencia textual.
+- Evidencia final: `evidence/enterprise-abstention.png`, capturada con Chromium instalado localmente desde la página servida por `app.py`.
 - Motivo: la entrega se construye en cortes autónomos para preservar evidencia y facilitar la revisión.
 
 ## Tiempo
@@ -12,7 +12,7 @@
 | Dato | Estado |
 |---|---|
 | Inicio | 24/09/2026; no se proporcionó hora de inicio. |
-| Entrega de evidencia independiente | 25/09/2026 11:28:50 -05:00. La entrega sigue parcial por la captura pendiente. |
+| Entrega de evidencia completa | 25/09/2026 11:43:00 -05:00. |
 | Ejercicio 1 | 1.2 h estimadas por la persona candidata. |
 | Ejercicio 2 | 1.4 h estimadas por la persona candidata. |
 | Ejercicio 3 | 1.7 h estimadas por la persona candidata. |
@@ -82,7 +82,7 @@ Se utilizó OpenCode con el asistente OpenAI GPT-5.6 Sol en los seis ejercicios 
 - GREEN de interfaz: 12/12 pruebas de `test_app.py`; regresiones de clasificador 18/18 y reporte 8/8; suite completa 38/38.
 - Demostración HTTP real: Pro → `APROBADO` (1.0), contraseña → `DUDOSO` (0.566), Enterprise → `SIN_EVIDENCIA` (0.373, respuesta nula); cuatro fragmentos en cada caso.
 - Prueba hostil HTTP: pregunta con `<img onerror>` y `<script>` y workspace con `<script>` conservaron el texto exacto en JSON; la página usa `createElement`/`textContent`, no contiene `innerHTML` y codifica ambos parámetros.
-- Limitación: no había navegador ni automatización disponible; se usaron contratos estáticos, pruebas de página y tráfico HTTP real. La captura final sigue pendiente para el corte 8.
+- Limitación histórica del corte 4: no había navegador disponible entonces; la captura final se completó posteriormente en el corte 8 con Chromium autorizado.
 - RED de recuperación heredada: 11 casos ejecutados contra el código original; 9 fallaron y 2 pasaron en 0.15 s. Los fallos expusieron contaminación por caché, pérdida de propiedad, lecturas de fuente y ausencia del ledger; los dos pases iniciales motivaron reforzar los escenarios de singleton y salida temporal antes de GREEN.
 - Efecto lateral durante ese RED: la implementación heredada creó `/tmp/last_answers.json`. Su contenido no se leyó. Con autorización específica, el proceso padre eliminó ese archivo y verificó su ausencia; esta recuperación no autoriza acceso a otras rutas externas.
 - GREEN del corte 5: 11/11 pruebas de ledger y recuperación aprobaron en 0.06 s. El ledger predeterminado registró el defecto real `a-4`/`src-99-inexistente` como `missing_source`; dos respuestas válidas de `acme` se conservaron.
@@ -94,15 +94,17 @@ Se utilizó OpenCode con el asistente OpenAI GPT-5.6 Sol en los seis ejercicios 
 - Verificador final: 4/4 pruebas enfocadas; hashes protegidos, `INTENTS` y dependencias coinciden. El ledger conserva un pendiente válido: `acme`/`a-4`/`src-99-inexistente`, `missing_source`; no autoriza corrección.
 - Árbol principal: suite completa 60/60 en 0.13 s; `python -m tools.verify_delivery` terminó con código 0.
 - Clon local limpio de `3098b69fccfb3970581e7945b2b1d13136e77584`: 60/60 en 0.14 s; verificador con código 0; página HTTP 200 (4532 bytes); Pro `APROBADO` 1.0, contraseña `DUDOSO` 0.666 y Enterprise `SIN_EVIDENCIA` 0.373 con respuesta nula.
-- Limitación conocida: no se detectaron Chromium, Chrome, Firefox, Playwright, Selenium, Pyppeteer, wkhtmltoimage, CutyCapt ni Pageres. Por ello no existe `evidence/enterprise-abstention.png` y el estado no es completo.
+- Captura final: Chromium `153.0.8010.47` cargó `http://127.0.0.1:8000/`, envió la pregunta Enterprise mediante el formulario real y produjo `evidence/enterprise-abstention.png`. La inspección DOM confirmó la pregunta, `SIN_EVIDENCIA` y `No hay evidencia suficiente para responder.` visibles; PNG de 146354 bytes, 1265×1452, SHA-256 `f88e87efd9af0169b0217276beea7216d0773f3bd8c78de3afafc51a476d8241`.
 
 ## Captura de abstención Enterprise
 
-**INCOMPLETO — pendiente de una captura real de la consola final en ejecución. No se adjunta evidencia fabricada.**
+![Abstención Enterprise real](evidence/enterprise-abstention.png)
+
+Capturada el 25/09/2026 a las 11:43:00 -05:00 desde `app.py` en `127.0.0.1:8000` con Chromium `153.0.8010.47` headless y Chrome DevTools Protocol. La página real mostró la pregunta `¿cuánto dura la garantía del plan Enterprise?`, el veredicto `SIN_EVIDENCIA` y la abstención explícita `No hay evidencia suficiente para responder.`. El perfil, el script, el log y el estado temporal del servidor se eliminaron después de la captura.
 
 ## Qué haría con una semana más
 
-Capturaría la evidencia Enterprise en un entorno con navegador ya autorizado, automatizaría ese smoke visual, añadiría un conjunto etiquetado de paráfrasis para medir recuperación semántica, revisaría semanalmente desconocidos y DUDOSO, y propondría una corrección de `a-4` solo con autorización explícita y una fuente válida verificable.
+Automatizaría el smoke visual con una prueba mantenible, añadiría un conjunto etiquetado de paráfrasis para medir recuperación semántica, revisaría semanalmente desconocidos y DUDOSO, y propondría una corrección de `a-4` solo con autorización explícita y una fuente válida verificable.
 
 ## Registro por cortes
 
@@ -137,7 +139,7 @@ Capturaría la evidencia Enterprise en un entorno con navegador ya autorizado, a
 - Pregunta y workspace se envían con `encodeURIComponent`. Los tres veredictos tienen estilos inequívocos, el fragmento con mayor puntaje queda marcado y la respuesta nula muestra una abstención explícita.
 - El servidor local devolvió los tres resultados exigidos: Pro `APROBADO` con 1.0, contraseña `DUDOSO` con 0.566 y Enterprise `SIN_EVIDENCIA` con 0.373 y respuesta nula.
 - La prueba hostil preservó literalmente sintaxis `<img onerror>` y `<script>` en la API sin insertarla en la plantilla. No había motor de navegador para ejecutar el DOM; la evidencia combina el contrato automatizado y HTTP real.
-- No se tomó la captura Enterprise: permanece reservada para la verificación final del corte 8.
+- En este corte no se tomó la captura Enterprise; la evidencia real se completó posteriormente en el corte 8.
 
 ### Corte 5 — recuperación heredada y ledger pendiente
 
@@ -168,4 +170,4 @@ Capturaría la evidencia Enterprise en un entorno con navegador ya autorizado, a
 - El verificador es de solo lectura, usa únicamente la biblioteca estándar y diferencia fallos de línea base, integridad y ledger mediante códigos de salida deterministas.
 - Las pruebas cubren éxito, divergencia protegida, JSONL malformado y registro pendiente válido sin convertirlo en fallo.
 - La auditoría y el clon limpio confirmaron código, dependencias, ledger y los tres resultados HTTP; el clon se eliminó después de recopilar la evidencia.
-- La captura permanece incompleta por falta exacta de capacidad de navegador; no se fabricó ni sustituyó.
+- Chromium local ejecutó la página real, el DOM probó pregunta/veredicto/abstención y la captura PNG validada quedó registrada sin modificar código, fixtures ni dependencias.
