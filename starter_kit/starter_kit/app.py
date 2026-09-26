@@ -19,6 +19,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import re
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 
@@ -34,6 +35,13 @@ PUERTO = 8000
 # si los cambias, di por qué en NOTAS.md.
 UMBRAL_MINIMO = 0.55   # por debajo de esto no hay evidencia suficiente
 UMBRAL_ALTO = 0.75     # por debajo de esto la respuesta va marcada como dudosa
+
+_REESTABLECER_VARIANT = re.compile(r"\breestabl(?=e(?:c|z))", re.IGNORECASE)
+
+
+def _normalize_retrieval_query(pregunta: str) -> str:
+    """Normaliza una variante ortográfica solo para recuperar evidencia."""
+    return _REESTABLECER_VARIANT.sub("restabl", pregunta)
 
 
 # ---------------------------------------------------------------------------
@@ -78,7 +86,8 @@ async def consultar(pregunta: str, workspace_id: str = "acme") -> dict:
     """
     intencion = classify_intent(pregunta)
     especialista = specialist_for(intencion)
-    fragmentos = [dict(fragmento) for fragmento in await search(pregunta)]
+    consulta_recuperacion = _normalize_retrieval_query(pregunta)
+    fragmentos = [dict(fragmento) for fragmento in await search(consulta_recuperacion)]
 
     if not fragmentos:
         veredicto = "SIN_EVIDENCIA"
