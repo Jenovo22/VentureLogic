@@ -20,7 +20,7 @@ cd VentureLogic
 
 Si ya lo tienes, abre una terminal en su raíz antes de continuar.
 
-### Linux y macOS
+### Linux
 
 ```bash
 cd entrega_jeronimo_novoa_giraldo
@@ -41,7 +41,22 @@ sudo apt update
 sudo apt install python3-venv
 ```
 
-No uses `sudo pip` ni `--break-system-packages`.
+No uses `sudo pip` ni `--break-system-packages`: los paquetes siempre se
+instalan dentro del `.venv` del proyecto.
+
+### macOS
+
+```bash
+cd entrega_jeronimo_novoa_giraldo
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+En macOS, `python3` suele estar disponible tras instalar Python desde
+`https://www.python.org/downloads/` o con Homebrew (`brew install python`).
+Al igual que en Linux, crea el entorno con `python3` y, una vez activado, usa
+`python` y `python -m pip` dentro del entorno virtual.
 
 ### Windows PowerShell
 
@@ -90,21 +105,61 @@ para detener el servidor.
 La suite y la consola funcionan completamente en local. La aplicación no usa
 credenciales, red externa ni servicios de IA.
 
-## Mapa del repo
+## Estructura del repositorio
+
+Desde la raíz del clon:
 
 ```
-app.py                        Ejercicio 6 — consola y pipeline local completos
-config/intents.py             Ejercicio 1 — catálogo y clasificación de intención
-tools/intent_report_tool.py   Ejercicio 2 — reporte de cobertura por intención
-tools/legacy_answers_tool.py  Ejercicio 3 — recuperación heredada corregida
-prompts/verificador_v1.md     Ejercicio 4 — versión original preservada
-prompts/verificador_v2.md     Ejercicio 4 — contrato estricto de verificación
-tools/loop_guard.py           Ejercicio 5 — guardia anti-loop
-shared/clients.py             Clientes (dobles). LÉELO ANTES DE EMPEZAR. No lo modifiques.
-shared/retriever.py           Buscador de fragmentos. Te lo damos hecho. No lo modifiques.
-fixtures/                     Datos de la base y del almacenamiento. No los modifiques.
-tests/                        Suite completa de regresión
+VentureLogic/
+├── 02_Prueba_Practica.pdf          Enunciado original de la prueba
+└── entrega_jeronimo_novoa_giraldo/ Paquete entregable y autocontenido
+    ├── README.md                   Esta guía de puesta en marcha
+    ├── NOTAS.md                    Notas de entrega exigidas por la prueba
+    ├── app.py                      Ejercicio 6 — consola y pipeline local
+    ├── pytest.ini                  Configuración de la suite de pruebas
+    ├── requirements.txt            Dependencias (pytest y pytest-asyncio)
+    ├── config/
+    │   └── intents.py              Ejercicio 1 — catálogo y clasificación
+    ├── tools/
+    │   ├── intent_report_tool.py   Ejercicio 2 — reporte de cobertura
+    │   ├── legacy_answers_tool.py  Ejercicio 3 — recuperación corregida
+    │   ├── loop_guard.py           Ejercicio 5 — guardia anti-loop
+    │   ├── correction_ledger.py    Registro de correcciones pendientes
+    │   └── verify_delivery.py      Verificador de integridad de la entrega
+    ├── prompts/
+    │   ├── verificador_v1.md       Ejercicio 4 — prompt original
+    │   ├── verificador_v2.md       Ejercicio 4 — contrato estricto
+    │   └── casos_verificador.md    Casos esperados del verificador
+    ├── shared/
+    │   ├── clients.py              Dobles de clientes (no modificar)
+    │   └── retriever.py            Buscador léxico (no modificar)
+    ├── fixtures/
+    │   ├── db.json                 Base de datos de prueba (no modificar)
+    │   └── storage.json            Almacenamiento de prueba (no modificar)
+    ├── evidence/
+    │   ├── enterprise-abstention.png       Captura de la abstención Enterprise
+    │   ├── protected_baseline.json         Hashes de archivos protegidos
+    │   └── pending_source_corrections.jsonl Ledger de fuentes pendientes
+    └── tests/                      Suite completa de regresión (61 pruebas)
 ```
+
+Qué contiene cada sección:
+
+| Ruta | Qué es | Ejercicio / uso |
+|------|--------|-----------------|
+| `app.py` | Servidor y pipeline `consultar()` con la consola web | Ejercicio 6; se ejecuta con `python app.py` |
+| `config/intents.py` | Catálogo `INTENTS` y `classify_intent()` por reglas | Ejercicio 1 |
+| `tools/intent_report_tool.py` | Conteo asíncrono de mensajes por intención | Ejercicio 2 |
+| `tools/legacy_answers_tool.py` | Recuperación heredada corregida | Ejercicio 3 |
+| `tools/loop_guard.py` | Límite de llamadas por (sesión, agente) | Ejercicio 5 |
+| `tools/correction_ledger.py` | Ledger de correcciones de fuente pendiente | Soporte del Ejercicio 3 |
+| `tools/verify_delivery.py` | Verifica hashes, `INTENTS` y dependencias | Auditoría con `python -m tools.verify_delivery` |
+| `prompts/` | Contrato del verificador y sus casos | Ejercicio 4 |
+| `shared/` | Dobles de clientes y buscador provistos | Leer antes de empezar; no modificar |
+| `fixtures/` | Datos de prueba de base y almacenamiento | No modificar |
+| `evidence/` | Captura, baseline de integridad y ledger | Evidencia evaluable de la entrega |
+| `tests/` | Pruebas de regresión de todos los ejercicios | Se ejecutan con `python -m pytest` |
+| `NOTAS.md` | Resumen, tiempos, decisiones y uso de IA | Documento obligatorio de la prueba |
 
 ## Reglas
 
