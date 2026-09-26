@@ -41,7 +41,7 @@ The intent classifier correctly returns `cuenta` for both spellings, but lexical
   - Route: direct implementation; no delegation.
   - Added focused regression tests before the production change.
   - Normalized the targeted spelling family only for retrieval while preserving intent input and output question.
-  - Commit: pending work-unit commit.
+  - Commit: `7583758` (`fix(retrieval): normalize password reset spelling variant`).
 
 ## Acceptance Criteria
 
