@@ -11,8 +11,8 @@
 
 | Dato | Estado |
 |---|---|
-| Inicio | 24/09/2026; no se proporcionó hora de inicio. |
-| Entrega de evidencia completa | 25/09/2026 11:43:00 -05:00. |
+| Inicio | 24/09/2026 14:00 |
+| Entrega final | Pendiente de la verificación final FDC-3; se registrará con la hora local observada, sin inferir zona horaria. |
 | Ejercicio 1 | 1.2 h estimadas por la persona candidata. |
 | Ejercicio 2 | 1.4 h estimadas por la persona candidata. |
 | Ejercicio 3 | 1.7 h estimadas por la persona candidata. |
@@ -42,11 +42,14 @@ Las reglas ofrecen resultados deterministas, rápidos y auditables: ante el mism
 
 | # | Línea | Qué está mal | Síntoma en producción | Gravedad |
 |---|---|---|---|---|
-| 1 | `tools/legacy_answers_tool.py`, firma original | El argumento `cache={}` conserva resultados mutables por proceso y solo usa el workspace como clave. | Solicitudes posteriores reciben datos de otro umbral y observan mutaciones hechas por llamantes anteriores. | Crítica |
-| 2 | `tools/legacy_answers_tool.py`, construcción original del cliente | Cada ejecución construye `DatabaseClient()` en lugar de reutilizar el singleton suministrado. | Aumentan conexiones e inicializaciones y se rompe el contrato de una instancia por proceso. | Alta |
-| 3 | `tools/legacy_answers_tool.py`, bucle original de fuentes | Se realiza una lectura secuencial de fuente por cada respuesta antes de completar la solicitud. | La latencia crece linealmente y fuentes repetidas generan lecturas redundantes. | Alta |
-| 4 | `tools/legacy_answers_tool.py`, escritura original | Cada solicitud sobrescribe `/tmp/last_answers.json` como estado compartido. | Solicitudes concurrentes filtran o pisan respuestas entre sí y dependen de un efecto lateral global. | Crítica |
-| 5 | `tools/legacy_answers_tool.py`, resolución original de fuente | Una fuente inexistente, malformada o sin título aborta la solicitud completa sin evidencia durable. | Una respuesta defectuosa oculta respuestas válidas y el defecto no queda disponible para corrección auditada. | Alta |
+| 1 | Firma original, `cache={}` | El valor mutable se crea una vez y queda compartido por todas las invocaciones del proceso. | Una consulta reutiliza estado de otra solicitud del mismo workspace; además retiene datos indefinidamente y distintos procesos o reinicios producen respuestas inconsistentes. | Crítica |
+| 2 | Lectura original `cache[workspace_id]` | La clave de caché omite `min_similitud`. | La primera consulta fija el conjunto: una llamada posterior con otro umbral recibe respuestas que debería excluir o pierde respuestas que debería incluir. | Crítica |
+| 3 | Retorno original `return cache[workspace_id]` y asignación `cache[workspace_id] = result` | La lista y sus diccionarios se entregan y almacenan por referencia, sin copia defensiva. | Si un llamante elimina o modifica una respuesta, los siguientes llamantes observan esa mutación. | Crítica |
+| 4 | Construcción original `db = DatabaseClient()` | Ignora `get_db_client()` y crea un cliente directo por ejecución. | En producción multiplica conexiones e inicializaciones y rompe el ciclo de vida singleton previsto por los adaptadores. | Alta |
+| 5 | Bucle original `await db.table("sources").item(...).get()` | Ejecuta una consulta de fuente secuencial por respuesta, incluso para fuentes repetidas. | La latencia y la carga del almacén crecen linealmente con las respuestas: patrón N+1 sin paralelismo ni agrupación. | Alta |
+| 6 | Bucle original, lectura de fuente antes de `if data["similitud"] >= min_similitud` | Filtra demasiado tarde: resuelve la fuente antes de decidir si la respuesta es elegible. | Respuestas bajo el umbral generan I/O inútil; una referencia inválida bajo el umbral puede abortar una solicitud que debía ignorarla. | Media |
+| 7 | Escritura original `Path("/tmp/last_answers.json").write_text(...)` | Usa un archivo global compartido como efecto lateral de cada consulta. | Solicitudes concurrentes se pisan y exponen respuestas de un workspace a otros usuarios o procesos del host; un filesystem efímero o de solo lectura rompe la llamada. | Crítica |
+| 8 | Accesos originales `item(...).get()` y `source.to_dict()["titulo"]` sin manejo local | Una fuente ausente, malformada o sin título lanza una excepción y no conserva evidencia del defecto. | Una sola referencia inválida aborta todas las respuestas válidas del workspace y deja el incidente sin registro durable para corregirlo. | Alta |
 
 La implementación elimina el caché y la salida temporal, obtiene respuestas y fuentes una vez por solicitud, aplica el umbral inclusivo antes de leer fuentes y devuelve diccionarios nuevos. Las respuestas con fuente inválida se omiten; el registro pendiente conserva identificadores y motivo sin ampliar el esquema devuelto ni modificar datos protegidos.
 
@@ -68,6 +71,7 @@ Se utilizó OpenCode con el asistente OpenAI GPT-5.6 Sol en los seis ejercicios 
 
 ## Evidencia de verificación
 
+- Estado actual posterior a la corrección tipográfica: suite completa **61/61** en 0.14 s; la pregunta `reestablezco` produce `DUDOSO` con similitud **0.566**.
 - Recolección inicial: 21 pruebas detectadas.
 - RED inicial del clasificador: 18 fallos por `NotImplementedError`.
 - GREEN del clasificador: 18 pruebas aprobadas.
@@ -93,7 +97,7 @@ Se utilizó OpenCode con el asistente OpenAI GPT-5.6 Sol en los seis ejercicios 
 - Regresión del corte 7: suite completa 56/56 en 0.12 s.
 - Verificador final: 4/4 pruebas enfocadas; hashes protegidos, `INTENTS` y dependencias coinciden. El ledger conserva un pendiente válido: `acme`/`a-4`/`src-99-inexistente`, `missing_source`; no autoriza corrección.
 - Árbol principal: suite completa 60/60 en 0.13 s; `python -m tools.verify_delivery` terminó con código 0.
-- Clon local limpio de `3098b69fccfb3970581e7945b2b1d13136e77584`: 60/60 en 0.14 s; verificador con código 0; página HTTP 200 (4532 bytes); Pro `APROBADO` 1.0, contraseña `DUDOSO` 0.666 y Enterprise `SIN_EVIDENCIA` 0.373 con respuesta nula.
+- Evidencia histórica anterior a la corrección tipográfica, clon local limpio de `3098b69fccfb3970581e7945b2b1d13136e77584`: 60/60 en 0.14 s; verificador con código 0; página HTTP 200 (4532 bytes); Pro `APROBADO` 1.0, contraseña `DUDOSO` 0.666 y Enterprise `SIN_EVIDENCIA` 0.373 con respuesta nula. El resultado vigente posterior a esa corrección es 61/61 y `0.566` para `reestablezco`.
 - Captura final: Chromium `153.0.8010.47` cargó `http://127.0.0.1:8000/`, envió la pregunta Enterprise mediante el formulario real y produjo `evidence/enterprise-abstention.png`. La inspección DOM confirmó la pregunta, `SIN_EVIDENCIA` y `No hay evidencia suficiente para responder.` visibles; PNG de 146354 bytes, 1265×1452, SHA-256 `f88e87efd9af0169b0217276beea7216d0773f3bd8c78de3afafc51a476d8241`.
 
 ## Captura de abstención Enterprise
@@ -123,7 +127,7 @@ Automatizaría el smoke visual con una prueba mantenible, añadiría un conjunto
 - Un workspace inexistente conserva el `KeyError` del almacenamiento porque no equivale a un workspace existente sin mensajes.
 - Los resultados inactivos o no registrados se acumulan en `desconocido`; así, la suma siempre coincide con los mensajes recuperados.
 - Los errores operativos se propagan y registran solo la operación y el workspace, sin cuerpos de mensajes, credenciales ni texto de la excepción.
-- Evidencia temporal del runner: RED 8 fallos en 0.08 s; GREEN 8 aprobadas en 0.05 s. Estas duraciones no sustituyen las horas reales, que siguen pendientes.
+- Evidencia temporal del runner: RED 8 fallos en 0.08 s; GREEN 8 aprobadas en 0.05 s. En ese corte todavía no se habían consolidado las horas; la estimación final figura en la tabla de tiempo.
 
 ### Corte 3 — núcleo asíncrono de consulta
 
