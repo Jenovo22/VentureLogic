@@ -43,6 +43,25 @@ async def test_pregunta_sin_evidencia_no_inventa_respuesta():
     assert "0.55" in r["motivo"] or "55" in r["motivo"], "el motivo debe citar el umbral"
 
 
+@pytest.mark.asyncio
+async def test_variantes_de_restablecer_conservan_evidencia_y_pregunta_original():
+    preguntas = (
+        "olvidé mi contraseña, ¿cómo la restablezco?",
+        "olvidé mi contraseña, ¿cómo la reestablezco?",
+        "OLVIDÉ MI CONTRASEÑA, ¿CÓMO LA REESTABLEZCO?",
+    )
+
+    resultados = [await consultar(pregunta, "acme") for pregunta in preguntas]
+    canonico = resultados[0]
+
+    assert canonico["veredicto"] == "DUDOSO"
+    for pregunta, resultado in zip(preguntas, resultados):
+        assert resultado["intencion"] == "cuenta"
+        assert resultado["veredicto"] == canonico["veredicto"]
+        assert resultado["fragmentos"] == canonico["fragmentos"]
+        assert resultado["pregunta"] == pregunta
+
+
 EXPECTED_KEYS = {
     "pregunta",
     "workspace",
