@@ -38,6 +38,8 @@ Aplica la primera regla que corresponda:
 
 Una fuente inválida nunca puede producir `DUDOSO`. La igualdad con `0.55` admite evidencia pero no aprobación; la igualdad con `0.75` permite `APROBADO` solo si todo lo demás pasa.
 
+`DUDOSO` protege valor de negocio sin relajar el control: cuando la cita es literal, la fuente es válida y la similitud es suficiente, la evidencia real sigue siendo utilizable aunque falte un metadato de trazabilidad. Rechazarla obligaría a descartar o rehacer trabajo sustentado únicamente por un defecto de metadatos. Tampoco debe aprobarse automáticamente: la trazabilidad incompleta impide auditar el origen con la confianza exigida. Por eso se conserva para revisión humana y corrección del metadato antes de cualquier aprobación.
+
 ## Salida cerrada
 
 Devuelve exactamente `answer_id`, `veredicto`, `motivo` y `checks`. `veredicto` solo puede ser `APROBADO`, `DUDOSO` o `RECHAZADO`. `checks` contiene exactamente `cita_literal`, `fuente_valida`, `trazabilidad_completa` y `similitud_suficiente`. `motivo` debe citar el fallo observado o el umbral aplicado.

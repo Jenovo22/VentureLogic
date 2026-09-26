@@ -5,9 +5,9 @@ Arranca así:
 
     python app.py            # http://localhost:8000
 
-El servidor y el esqueleto de la página ya funcionan: si lo corres ahora mismo
-verás la página, escribirás una pregunta y te devolverá un error porque
-`consultar()` todavía no está implementada. Eso es lo que tú construyes.
+El servidor, el pipeline y la página están implementados. Al ejecutarlo puedes
+consultar la evidencia local y ver la intención, los fragmentos, el veredicto y
+la respuesta o abstención resultante.
 
 NO agregues dependencias. Todo esto sale de la librería estándar a propósito:
 nada de Flask, FastAPI, React ni CSS externo. Feo pero claro está bien —
@@ -45,7 +45,7 @@ def _normalize_retrieval_query(pregunta: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# LO QUE TIENES QUE IMPLEMENTAR
+# PIPELINE DE CONSULTA
 # ---------------------------------------------------------------------------
 
 async def consultar(pregunta: str, workspace_id: str = "acme") -> dict:
@@ -137,9 +137,8 @@ async def consultar(pregunta: str, workspace_id: str = "acme") -> dict:
 # ---------------------------------------------------------------------------
 # LA PÁGINA
 #
-# Esto es un esqueleto que funciona pero no sirve de mucho: vuelca el JSON en
-# crudo. Tu trabajo es que un humano entienda de un vistazo qué hizo el
-# asistente y por qué. Como mínimo debe verse:
+# La página permite que un humano entienda de un vistazo qué hizo el asistente
+# y por qué. Muestra como mínimo:
 #
 #   - la intención detectada
 #   - los fragmentos recuperados, cada uno con su puntaje de similitud
