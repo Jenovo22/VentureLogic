@@ -39,7 +39,7 @@ The implementation passes all current checks, but the final audit found explicit
   - Remove or clearly mark obsolete starter-era statements without rewriting historical RED evidence.
   - Close with a Conventional Commit and exact verification evidence.
 
-- [ ] **FDC-2 — Build the required delivery package**
+- [x] **FDC-2 — Build the required delivery package**
   - Route: direct implementation; no delegation.
   - Mechanically move the tracked runnable package from `starter_kit/starter_kit/` to `entrega_jeronimo_novoa_giraldo/`.
   - Preserve file bytes during the move except explicitly authorized documentation/application-comment corrections.
@@ -65,7 +65,7 @@ The implementation passes all current checks, but the final audit found explicit
 
 ## Progress and Evidence
 
-- Status: FDC-1 complete; FDC-2 pending; FDC-3 pending.
+- Status: FDC-1 complete; FDC-2 complete; FDC-3 pending.
 - FDC-1 evidence:
   - Inspected the original `tools/legacy_answers_tool.py` bytes from baseline commit `dfbcea2` and documented eight distinct, concrete defects without altering the corrected implementation.
   - Corrected the start time to `24/09/2026 14:00`; final delivery time remains explicitly pending until FDC-3 observes it.
@@ -75,4 +75,13 @@ The implementation passes all current checks, but the final audit found explicit
   - Focused verification: `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest` from the package root passed 61/61 in 0.16 s.
   - Runtime boundary: N/A for this documentation-only correction; HTTP behavior is unchanged and will be proved in FDC-3.
   - Rollback boundary: revert only `NOTAS.md`, `README.md`, `prompts/verificador_v2.md`, the stale comments/docstring in `app.py`, and this FDC-1 evidence block.
-- Next step: complete the mechanical FDC-2 package move.
+- FDC-2 evidence:
+  - Mechanically moved all 29 tracked package files from `starter_kit/starter_kit/` to `entrega_jeronimo_novoa_giraldo/`; no package file was recreated.
+  - Required PDF paths are present: `NOTAS.md`, `app.py`, `config/intents.py`, three named tools, both v2 prompt artifacts, and all required tests including `test_legacy_answers.py`.
+  - Delivery support is preserved: `shared/`, `fixtures/`, `evidence/`, `README.md`, `requirements.txt`, and `pytest.ini` moved with the package.
+  - Protected files and screenshot retained their pre-move SHA-256 values; the screenshot remains `f88e87efd9af0169b0217276beea7216d0773f3bd8c78de3afafc51a476d8241`.
+  - Root `.gitignore` now excludes `.venv/`, `.codegraph/`, Python bytecode/cache directories, pytest cache, and `.DS_Store` without excluding evidence.
+  - Focused verification: mechanical identity and required-path checks; runtime behavior is unchanged and full pytest/verifier execution belongs to FDC-3.
+  - Runtime boundary: N/A for a path-only move; FDC-3 will run the server from the delivered location.
+  - Rollback boundary: revert the package rename, `.gitignore`, and this FDC-2 evidence block together; no implementation behavior is part of this unit.
+- Next step: complete FDC-3 verification and record the observed delivery timestamp.
