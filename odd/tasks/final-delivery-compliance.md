@@ -46,7 +46,7 @@ The implementation passes all current checks, but the final audit found explicit
   - Add repository ignore rules for local environments, CodeGraph, Python caches, test caches, and OS metadata.
   - Confirm every PDF-listed path exists under the delivery package and close with a Conventional Commit.
 
-- [ ] **FDC-3 — Prove final delivery from committed bytes**
+- [x] **FDC-3 — Prove final delivery from committed bytes**
   - Route: direct implementation; no delegation.
   - Run focused/full tests, delivery verifier, three HTTP demonstrations, screenshot validation, protected hashes, dependency audit, and `git diff --check` from the new layout.
   - Clone the committed candidate into a clean directory under the authorized workspace, run pytest/verifier/server without network or credentials, then remove temporary state.
@@ -65,7 +65,7 @@ The implementation passes all current checks, but the final audit found explicit
 
 ## Progress and Evidence
 
-- Status: FDC-1 complete; FDC-2 complete; FDC-3 pending.
+- Status: FDC-1 complete; FDC-2 complete; FDC-3 complete.
 - FDC-1 evidence:
   - Inspected the original `tools/legacy_answers_tool.py` bytes from baseline commit `dfbcea2` and documented eight distinct, concrete defects without altering the corrected implementation.
   - Corrected the start time to `24/09/2026 14:00`; final delivery time remains explicitly pending until FDC-3 observes it.
@@ -84,4 +84,17 @@ The implementation passes all current checks, but the final audit found explicit
   - Focused verification: mechanical identity and required-path checks; runtime behavior is unchanged and full pytest/verifier execution belongs to FDC-3.
   - Runtime boundary: N/A for a path-only move; FDC-3 will run the server from the delivered location.
   - Rollback boundary: revert the package rename, `.gitignore`, and this FDC-2 evidence block together; no implementation behavior is part of this unit.
-- Next step: complete FDC-3 verification and record the observed delivery timestamp.
+- FDC-3 evidence:
+  - Delivery timestamp observed with `date '+%d/%m/%Y %H:%M:%S'`: `26/09/2026 16:30:54`; `NOTAS.md` records it as local time without an inferred timezone.
+  - `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m pytest` from the delivered package: 61/61 passed in 0.25 s.
+  - `/home/jero/Documentos/VentureLogic_Test/.venv/bin/python -m tools.verify_delivery`: exit 0; 7 protected hashes, canonical `INTENTS`, and dependency declaration passed; valid pending `acme`/`a-4`/`src-99-inexistente` was reported.
+  - Real `python app.py` loopback run: page HTTP 200 (4532 bytes); Pro → `APROBADO`/`1.0`; typo password question → `DUDOSO`/`0.566`; Enterprise → `SIN_EVIDENCIA`/`0.373` with null response; server stopped afterward.
+  - Screenshot: valid PNG signature, 1265×1452, 146354 bytes, SHA-256 `f88e87efd9af0169b0217276beea7216d0773f3bd8c78de3afafc51a476d8241`; no regeneration.
+  - Protected SHA-256 values after FDC-2/FDC-3 equal the pre-move values; dependencies remain exactly `pytest>=8.0` and `pytest-asyncio>=0.23`; every PDF-listed path exists.
+  - Conceptual word counts remain Exercise 1 = 107/120, Exercise 4 = 114/120, Exercise 5 = 117/150, Exercise 6 = 97/120.
+  - Cumulative authored review size is 171 additions plus deletions versus `origin/main`, excluding 100% mechanical renames and the existing PNG bytes; no chained-PR size decision is required.
+  - `git diff --check` passed. Commits: FDC-1 `66d1d01`; FDC-2 `311da7c`; FDC-3 is the receipt commit containing this block and its hash is reported externally to avoid self-reference.
+  - The clean-clone proof runs from this final committed HEAD after the receipt commit. Its exact result is reported externally because committing it would recursively change the candidate being proved.
+  - Engram mirror remains pending: repeated `mem_save` attempts failed because the server could not confirm session registration; repository work was not blocked.
+  - Rollback boundary: revert the FDC-3 receipt (`NOTAS.md` timestamp/evidence plus this evidence block) without reverting the FDC-1 documentation correction or FDC-2 mechanical rename.
+- Next step: no tracked implementation work remains; run and report the non-recursive clean-clone proof from the FDC-3 commit.

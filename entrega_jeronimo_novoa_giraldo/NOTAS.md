@@ -12,7 +12,7 @@
 | Dato | Estado |
 |---|---|
 | Inicio | 24/09/2026 14:00 |
-| Entrega final | Pendiente de la verificación final FDC-3; se registrará con la hora local observada, sin inferir zona horaria. |
+| Entrega final | 26/09/2026 16:30:54 (hora local observada). |
 | Ejercicio 1 | 1.2 h estimadas por la persona candidata. |
 | Ejercicio 2 | 1.4 h estimadas por la persona candidata. |
 | Ejercicio 3 | 1.7 h estimadas por la persona candidata. |
@@ -71,7 +71,9 @@ Se utilizó OpenCode con el asistente OpenAI GPT-5.6 Sol en los seis ejercicios 
 
 ## Evidencia de verificación
 
-- Estado actual posterior a la corrección tipográfica: suite completa **61/61** en 0.14 s; la pregunta `reestablezco` produce `DUDOSO` con similitud **0.566**.
+- Verificación final FDC-3 desde `entrega_jeronimo_novoa_giraldo/`: suite completa **61/61** en 0.25 s y verificador con código 0; el pendiente válido `acme`/`a-4`/`src-99-inexistente` se informó como evidencia, no como fallo.
+- Demostración HTTP final con `python app.py`: página 200 (4532 bytes); Pro → `APROBADO` 1.0, `reestablezco` → `DUDOSO` 0.566 y Enterprise → `SIN_EVIDENCIA` 0.373 con respuesta nula.
+- Integridad final: 7/7 hashes protegidos, literal canónico de `INTENTS` y dependencias coinciden con la línea base. La captura conservada es PNG válido de 1265×1452, 146354 bytes y SHA-256 `f88e87efd9af0169b0217276beea7216d0773f3bd8c78de3afafc51a476d8241`.
 - Recolección inicial: 21 pruebas detectadas.
 - RED inicial del clasificador: 18 fallos por `NotImplementedError`.
 - GREEN del clasificador: 18 pruebas aprobadas.
