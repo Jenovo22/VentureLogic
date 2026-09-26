@@ -97,4 +97,4 @@ The implementation passes all current checks, but the final audit found explicit
   - The clean-clone proof runs from this final committed HEAD after the receipt commit. Its exact result is reported externally because committing it would recursively change the candidate being proved.
   - Engram mirror remains pending: repeated `mem_save` attempts failed because the server could not confirm session registration; repository work was not blocked.
   - Rollback boundary: revert the FDC-3 receipt (`NOTAS.md` timestamp/evidence plus this evidence block) without reverting the FDC-1 documentation correction or FDC-2 mechanical rename.
-- Next step: no tracked implementation work remains; run and report the non-recursive clean-clone proof from the FDC-3 commit.
+- Next step: no tracked implementation work remains; the non-recursive clean-clone proof from the FDC-3 commit completed successfully with 61 tests passing, the delivery verifier passing, and the runtime scenarios passing.
