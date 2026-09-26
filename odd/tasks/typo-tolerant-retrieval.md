@@ -38,7 +38,7 @@ The intent classifier correctly returns `cuenta` for both spellings, but lexical
 ## Tasks
 
 - [x] **TTR-1 — Normalize the spelling variant and prove behavior**
-  - Route: direct implementation; no delegation.
+  - Route: delegated direct writer; production code and tests required coordinated non-trivial edits.
   - Added focused regression tests before the production change.
   - Normalized the targeted spelling family only for retrieval while preserving intent input and output question.
   - Commit: `7583758` (`fix(retrieval): normalize password reset spelling variant`).
@@ -65,5 +65,8 @@ The intent classifier correctly returns `cuenta` for both spellings, but lexical
 - GREEN: focused suite `13 passed in 0.04s`; full suite `61 passed in 0.17s`.
 - Integrity: verifier passed all 7 protected hashes, canonical intents, and dependency checks; its expected pending correction remained reported. `git diff --check` passed.
 - Runtime: canonical and typo inputs both returned `cuenta`, `DUDOSO`, score `0.566`, and their exact original questions.
+- Parent spot check: focused suite `13 passed in 0.04s`.
+- Native review assessment: `medium`, `under_budget`; no candidate review due at this boundary.
+- Engram mirror: pending because session registration could not be confirmed; the local document remains authoritative.
 - Authored line count: 99 additions plus deletions across the complete work-unit diff.
 - Rollback boundary: revert this work unit's `app.py` normalization helper/use, regression test, and task evidence; no protected or unrelated behavior is involved.
